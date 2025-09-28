@@ -24,8 +24,8 @@ YTSection _$YTSectionFromJson(Map<String, dynamic> json) => YTSection(
 Map<String, dynamic> _$YTSectionToJson(YTSection instance) => <String, dynamic>{
   'title': instance.title,
   'strapline': instance.strapline,
-  'trailing': instance.trailing,
-  'items': instance.items,
+  'trailing': instance.trailing?.toJson(),
+  'items': instance.items.map((s) => s.toJson()).toList(),
   'type': _$YTSectionTypeEnumMap[instance.type]!,
   'continuation': instance.continuation,
 };
@@ -83,9 +83,11 @@ Map<String, dynamic> _$YTSectionItemToJson(YTSectionItem instance) =>
       'subtitle': instance.subtitle,
       'desctiption': instance.desctiption,
       'id': instance.id,
-      'thumbnails': instance.thumbnails,
+      'thumbnails': instance.thumbnails
+          .map((thumbnail) => thumbnail.toJson())
+          .toList(),
       'type': _$YTSectionItemTypeEnumMap[instance.type]!,
-      'artists': instance.artists,
+      'artists': instance.artists.map((artist) => artist.toJson()).toList(),
       'album': instance.album,
       'endpoint': instance.endpoint,
       'shuffleEndpoint': instance.shuffleEndpoint,

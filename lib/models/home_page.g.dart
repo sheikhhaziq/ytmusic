@@ -18,8 +18,8 @@ YTHomePage _$YTHomePageFromJson(Map<String, dynamic> json) => YTHomePage(
 
 Map<String, dynamic> _$YTHomePageToJson(YTHomePage instance) =>
     <String, dynamic>{
-      'chips': instance.chips,
-      'sections': instance.sections,
+      'chips': instance.chips.map((s) => s.toJson()).toList(),
+      'sections': instance.sections.map((s) => s.toJson()).toList(),
       'continuation': instance.continuation,
     };
 

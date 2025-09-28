@@ -1,9 +1,6 @@
 import 'package:ytmusic/client.dart';
-import 'package:ytmusic/models/album.dart';
 import 'package:ytmusic/models/browse_page.dart';
 import 'package:ytmusic/models/chip_page.dart';
-import 'package:ytmusic/models/config.dart';
-import 'package:ytmusic/models/home_page.dart';
 import 'package:ytmusic/models/item_continuation.dart';
 import 'package:ytmusic/models/models.dart';
 import 'package:ytmusic/models/playlist.dart';
@@ -59,6 +56,9 @@ class YTMusic {
     }
     return home;
   }
+
+  Future<Map<String, dynamic>> getHomePageRaw({int limit = 1}) async =>
+      (await getHomePage(limit: limit)).toJson();
 
   Future<YTHomeContinuationPage> getHomePageContinuation({
     required String continuation,
