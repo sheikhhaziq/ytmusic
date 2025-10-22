@@ -57,9 +57,6 @@ class YTMusic {
     return home;
   }
 
-  Future<Map<String, dynamic>> getHomePageRaw({int limit = 1}) async =>
-      (await getHomePage(limit: limit)).toJson();
-
   Future<YTHomeContinuationPage> getHomePageContinuation({
     required String continuation,
   }) async {
@@ -111,6 +108,13 @@ class YTMusic {
   }) async {
     final data = await _client.constructRequest("browse", body: body);
     return runInIsolate(PlaylistParser.parse, data);
+  }
+
+  Future<List<YTSectionItem>> getNextSongs({
+    required Map<String, dynamic> body,
+  }) async {
+    final data = await _client.constructRequest("next", body: body);
+    return PlaylistParser.parseSongs(data);
   }
 
   Future<YTPlaylistContinuationPage> getPlaylistSectionContinuation({

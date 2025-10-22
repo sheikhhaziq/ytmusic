@@ -80,6 +80,27 @@ void main() async {
     );
     pprint(res);
   });
+
+  test("Get playlist Songs", ()async {
+    final res =await ytmusic.getNextSongs(
+      body: {
+        "videoId": "rvGbTsXPu9A",
+        "playlistId": "RDAMVMrvGbTsXPu9A",
+        "params": "wAEB",
+        "loggingContext": {
+          "vssLoggingContext": {
+            "serializedContextData": "GhFSREFNVk1ydkdiVHNYUHU5QQ%3D%3D",
+          },
+        },
+        "watchEndpointMusicSupportedConfigs": {
+          "watchEndpointMusicConfig": {
+            "musicVideoType": "MUSIC_VIDEO_TYPE_ATV",
+          },
+        },
+      },
+    );
+    pprint(res);
+  });
   test('Get Playlist continuation Page', () async {
     final res = await ytmusic.getPlaylistSectionContinuation(
       body: {
