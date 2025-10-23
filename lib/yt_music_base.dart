@@ -27,6 +27,10 @@ class YTMusic {
     );
   }
 
+  void setConfig(YTConfig config){
+    _client.config=config;
+  }
+
   static Future<YTConfig?> fetchConfig() => YTClient.fetchConfig();
 
   Future<YTItemContinuation> getContinuationItems({
