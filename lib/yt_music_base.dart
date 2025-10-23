@@ -19,11 +19,14 @@ import 'package:ytmusic/utils/isolate.dart';
 
 class YTMusic {
   late YTClient _client;
+  void Function(YTConfig)? onConfigUpdate;
 
-  YTMusic({String? cookies, YTConfig? config}) {
+
+  YTMusic({String? cookies, YTConfig? config,this.onConfigUpdate}) {
     _client = YTClient(
       config ?? YTConfig(visitorData: "", language: "en", location: "IN"),
       cookies,
+      onConfigUpdate:onConfigUpdate 
     );
   }
 

@@ -7,7 +7,8 @@ class YTClient {
   late CookieJar _cookieJar;
   late Dio _dio;
   late String _timestamp;
-  YTClient(this.config, cookies) {
+  final void Function(YTConfig)? onConfigUpdate;
+  YTClient(this.config, cookies,{this.onConfigUpdate}) {
     _setupDio();
     _setupCookies(cookies);
     _setupTimestamp();
@@ -123,8 +124,17 @@ class YTClient {
       "Origin": "https://music.youtube.com",
       "cookie": "CONSENT=YES+1",
       "Accept-Language": "en",
-      "X-Goog-Visitor-Id": "CgtYbjI3akwyRGZ2MCiv2d_DBjIKCgJJThIEGgAgOA%3D%3D",
+      "X-Goog-Visitor-Id": config.visitorData,
     };
+    if(config.visitorData.trim().isEmpty){
+      final c = await fetchConfig();
+      if(c!=null){
+        config=c;
+        if(onConfigUpdate!=null){
+          onConfigUpdate!(c);
+        }
+      }
+    }
 
     final searchParams = Uri.parse("?").replace(
       queryParameters: {
@@ -140,7 +150,7 @@ class YTClient {
           "clientVersion": _timestamp,
           "gl": config.location,
           "hl": config.language,
-          "visitorData": "CgtYbjI3akwyRGZ2MCiv2d_DBjIKCgJJThIEGgAgOA%3D%3D",
+          "visitorData": config.visitorData,
         },
 
         "user": {},
