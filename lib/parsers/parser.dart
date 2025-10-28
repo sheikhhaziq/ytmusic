@@ -5,7 +5,9 @@ import 'package:ytmusic/models/artist.dart';
 import 'package:ytmusic/models/browse_page.dart';
 import 'package:ytmusic/models/section.dart';
 import 'package:ytmusic/models/thumbnail.dart';
+import 'package:ytmusic/models/yt_item.dart';
 import 'package:ytmusic/utils/filters.dart';
+import 'package:ytmusic/utils/pretty_print.dart';
 import 'package:ytmusic/utils/traverse.dart';
 
 class Parser {
@@ -29,7 +31,7 @@ class Parser {
     return null;
   }
 
-  static YTSectionItem? parseSectionItem(data) {
+  static YTItem? parseSectionItem(data) {
     if (data['musicResponsiveListItemRenderer'] != null) {
       return _musicResponsiveListItemRenderer(
         data['musicResponsiveListItemRenderer'],
@@ -45,6 +47,11 @@ class Parser {
     }
     if (data['playlistPanelVideoRenderer'] != null) {
       return _playlistPanelVideoRenderer(data['playlistPanelVideoRenderer']);
+    }
+    if (data['musicNavigationButtonRenderer'] != null) {
+      return _musicNavigationButtonRenderer(
+        data['musicNavigationButtonRenderer'],
+      );
     }
 
     return null;
@@ -67,6 +74,7 @@ class Parser {
     return YTSection(
       title: traverseString(header, ['title', 'runs', 'text']) ?? '',
       strapline: traverseString(header, ['strapline', 'runs', 'text']),
+      itemsPerColumn:data['numItemsPerColumn'] !=null ? int.tryParse(data['numItemsPerColumn']):null,
       trailing: endpoint is Map
           ? YTSectionTrailing(
               text:
@@ -88,14 +96,21 @@ class Parser {
           .where((item) => item != null)
           .toList()
           .cast(),
-      type: data['numItemsPerColumn'] != null
+      type: contentsData.firstOrNull?["musicNavigationButtonRenderer"] != null
+          ? YTSectionType.multiColumnRow
+          : contentsData.firstOrNull?['musicMultiRowListItemRenderer'] != null
           ? YTSectionType.multiColumn
-          : ([
-                  "COLLECTION_STYLE_ITEM_SIZE_SMALL",
-                  "COLLECTION_STYLE_ITEM_SIZE_MEDIUM",
-                ].contains(data['itemSize'])
-                ? YTSectionType.row
-                : YTSectionType.singleColumn),
+          : contentsData.firstOrNull?['musicResponsiveListItemRenderer'] !=null
+          ? YTSectionType.multiColumn
+          : YTSectionType.row,
+      // type: data['numItemsPerColumn'] != null
+      //     ? YTSectionType.multiColumn
+      //     : ([
+      //             "COLLECTION_STYLE_ITEM_SIZE_SMALL",
+      //             "COLLECTION_STYLE_ITEM_SIZE_MEDIUM",
+      //           ].contains(data['itemSize'])
+      //           ? YTSectionType.row
+      //           : YTSectionType.singleColumn),
     );
   }
 
@@ -106,7 +121,7 @@ class Parser {
           .map((json) => parseSectionItem(json))
           .where((e) => e != null)
           .toList()
-          .cast<YTSectionItem>(),
+          .cast<YTItem>(),
       type: data['collapsedItemCount'] != null
           ? YTSectionType.singleColumn
           : YTSectionType.row,
@@ -121,7 +136,7 @@ class Parser {
           .map((json) => parseSectionItem(json))
           .where((e) => e != null)
           .toList()
-          .cast<YTSectionItem>(),
+          .cast<YTItem>(),
     );
   }
 
@@ -150,7 +165,7 @@ class Parser {
           .map((json) => parseSectionItem(json))
           .where((e) => e != null)
           .toList()
-          .cast<YTSectionItem>(),
+          .cast<YTItem>(),
       type: YTSectionType.singleColumn,
       trailing: trailing,
     );
@@ -188,24 +203,28 @@ class Parser {
     final artistsData = (data['subtitle']?['runs'] as List?)
         ?.where(isArtist)
         .toList();
-    final album = albumData?.map((json) => YTAlbum.fromJson(json)).firstOrNull;
+    final album = albumData
+        ?.map((json) => YTAlbumBasic.fromJson(json))
+        .firstOrNull;
     final artists = artistsData
-        ?.map((json) => YTArtist.fromJson(json))
+        ?.map((json) => YTArtistBasic.fromJson(json))
         .toList();
     final contents = traverseList(data, ["contents"]);
     return YTSection(
       title: header ?? "",
       items: [
-        YTSectionItem(
+        YTItem.itemFrom(
+          getItemType(type),
           title: title,
           subtitle: subtitle,
+          playlistId: "",
           artists: artists ?? [],
           album: album,
           id: id,
           thumbnails: thumbnails,
           endpoint: endpoint,
-          type: getSectionItemType(type),
-        ),
+          description: "",
+        )!,
         ...contents
             .map((json) => parseSectionItem(json))
             .where((e) => e != null)
@@ -215,7 +234,7 @@ class Parser {
     );
   }
 
-  static YTSectionItem _musicResponsiveListItemRenderer(data) {
+  static YTItem? _musicResponsiveListItemRenderer(data) {
     // ["trackingParams","thumbnail","overlay","flexColumns","menu","playlistItemData","flexColumnDisplayStyle","itemHeight"]
     final thumbnailsData = traverseList(data, [
       'thumbnail',
@@ -246,9 +265,7 @@ class Parser {
     if (endpoint is List) {
       endpoint = traverse(navigationEndpoint, ['browseEndpoint']);
     }
-    if (endpoint is List) {
-      endpoint = traverse(data, ['navigationEndpoint', 'browseEndpoint']);
-    }
+    if (endpoint is List) return null;
 
     final id =
         traverseString(navigationEndpoint, ['videoId']) ??
@@ -257,6 +274,35 @@ class Parser {
         '';
     final playlistId = traverseString(endpoint, ['playlistId']) ?? 'RDAMVM$id';
 
+    final subtitle = traverseList(flexColumns[1], [
+      'text',
+      'runs',
+      'text',
+    ]).join('');
+    final albumData = flexColumnsExpanded.where(isAlbum);
+    final artistsData = flexColumnsExpanded.where(isArtist).toList();
+    final artists = artistsData
+        .map((json) => YTArtistBasic.fromJson(json))
+        .toList();
+    final album = albumData
+        .map((json) => YTAlbumBasic.fromJson(json))
+        .firstOrNull;
+    final menuItems = traverseList(data['menu'], [
+      'items',
+      'menuNavigationItemRenderer',
+    ]);
+    final radio = menuItems.firstWhere(isRadio, orElse: () => null);
+    dynamic radioEndpoint;
+
+    if (radio != null) {
+      radioEndpoint = traverse(radio, ['navigationEndpoint', 'watchEndpoint']);
+    }
+    if (radioEndpoint is List) {
+      radioEndpoint = traverse(radio, [
+        'navigationEndpoint',
+        'watchPlaylistEndpoint',
+      ]);
+    }
     final type =
         traverseString(endpoint, [
           'watchEndpointMusicSupportedConfigs',
@@ -269,84 +315,74 @@ class Parser {
           "pageType",
         ]);
 
-    final subtitle = traverseList(flexColumns[1], [
-      'text',
-      'runs',
-      'text',
-    ]).join('');
-    final albumData = flexColumnsExpanded.where(isAlbum);
-    final artistsData = flexColumnsExpanded.where(isArtist).toList();
-    final artists = artistsData.map((json) => YTArtist.fromJson(json)).toList();
-    final album = albumData.map((json) => YTAlbum.fromJson(json)).firstOrNull;
-    final menuItems = traverseList(data['menu'], [
-      'items',
-      'menuNavigationItemRenderer',
-    ]);
-    final shuffle = menuItems.firstWhere(isShuffle, orElse: () => null);
-    final radio = menuItems.firstWhere(isRadio, orElse: () => null);
-    dynamic shuffleEndpoint;
-    dynamic radioEndpoint;
-    if (shuffle != null) {
-      shuffleEndpoint = traverse(shuffle, [
-        'navigationEndpoint',
-        'watchEndpoint',
-      ]);
-    }
-    if (shuffleEndpoint is List) {
-      shuffleEndpoint = traverse(shuffle, [
-        'navigationEndpoint',
-        'watchPlaylistEndpoint',
-      ]);
-    }
-    if (radio != null) {
-      radioEndpoint = traverse(radio, ['navigationEndpoint', 'watchEndpoint']);
-    }
-    if (radioEndpoint is List) {
-      radioEndpoint = traverse(radio, [
-        'navigationEndpoint',
-        'watchPlaylistEndpoint',
-      ]);
-    }
-    return YTSectionItem(
-      title: title,
+    return YTItem.itemFrom(
+      getItemType(type),
       id: id,
+      title: title,
+      subtitle: subtitle,
+      description: "",
       playlistId: playlistId,
       thumbnails: thumbnails,
-      type: getSectionItemType(type),
       album: album,
       artists: artists,
-      subtitle: subtitle,
-      endpoint: endpoint is Map ? endpoint : null,
-      shuffleEndpoint: shuffleEndpoint is Map ? shuffleEndpoint : null,
-      radioEndpoint: radioEndpoint is Map ? radioEndpoint : null,
+      endpoint: endpoint,
+      radioEndpoint: radioEndpoint,
+      shuffleEndpoint: null,
     );
   }
 
-  static YTSectionItem _musicTwoRowItemRenderer(data) {
+  static YTItem? _musicTwoRowItemRenderer(data) {
     // "thumbnailRenderer","aspectRatio","title","subtitle","navigationEndpoint","trackingParams","menu","thumbnailOverlay"
-    final isRectangle =
-        data['aspectRatio'] != null &&
-        data['aspectRatio'].toString().endsWith("16_9");
+    // final isRectangle =
+    //     data['aspectRatio'] != null &&
+    //     data['aspectRatio'].toString().endsWith("16_9");
     final thumbnails = traverseList(data['thumbnailRenderer'], [
       'musicThumbnailRenderer',
       'thumbnail',
       'thumbnails',
     ]).map((json) => YTThumbnail.fromJson(json)).toList();
     final title = traverseString(data['title'], ['runs', 'text']);
-    final endpoint =
-        traverse(data['title'], [
-          'runs',
-          'navigationEndpoint',
-          'browseEndpoint',
-        ]) ??
-        traverse(data['navigationEndpoint'], ['browseEndpoint']);
-    final id = traverseString(endpoint, ['browseId']);
-    final type = traverseString(endpoint, [
-      'browseEndpointContextSupportedConfigs',
-      'browseEndpointContextMusicConfig',
-      'pageType',
+
+    dynamic endpoint = traverse(data['title'], [
+      'runs',
+      'navigationEndpoint',
+      'browseEndpoint',
     ]);
-    final subtitle = traverseString(data['subtitle'], ['runs', 'text']);
+    if (endpoint is List) {
+      endpoint = traverse(data['navigationEndpoint'], ['browseEndpoint']);
+    }
+    if (endpoint is List) {
+      endpoint = traverse(data['title'], [
+        'runs',
+        'navigationEndpoint',
+        'watchEndpoint',
+      ]);
+    }
+    if (endpoint is List) {
+      endpoint = traverse(data['navigationEndpoint'], ['watchEndpoint']);
+    }
+    if (endpoint is List) {
+      pprint(data);
+    }
+    final artistsData = traverseList(data['subtitle'], [
+      'runs',
+    ]).where(isArtist).toList();
+    final artists = artistsData
+        .map((json) => YTArtistBasic.fromJson(json))
+        .toList();
+    final id = traverseString(endpoint, ['browseId']);
+    final type =
+        traverseString(endpoint, [
+          'browseEndpointContextSupportedConfigs',
+          'browseEndpointContextMusicConfig',
+          'pageType',
+        ]) ??
+        traverseString(endpoint, [
+          'watchEndpointMusicSupportedConfigs',
+          'watchEndpointMusicConfig',
+          'musicVideoType',
+        ]);
+    final subtitle = traverseList(data['subtitle'], ['runs', 'text']).join();
     final menuItems = traverseList(data['menu'], [
       'items',
       'menuNavigationItemRenderer',
@@ -383,20 +419,35 @@ class Parser {
         radioEndpoint = r;
       }
     }
-    return YTSectionItem(
-      title: title ?? '',
-      id: id ?? '',
-      thumbnails: thumbnails,
-      type: getSectionItemType(type),
+
+    return YTItem.itemFrom(
+      getItemType(type),
+      id: id ?? "",
+      title: title ?? "",
       subtitle: subtitle,
-      endpoint: endpoint is Map ? endpoint : null,
-      shuffleEndpoint: shuffleEndpoint,
-      radioEndpoint: radioEndpoint,
-      isRectangle: isRectangle,
+      description: "",
+      playlistId: "",
+      thumbnails: thumbnails,
+      album: null,
+      artists: artists,
+      endpoint: endpoint,
+      shuffleEndpoint: shuffleEndpoint?.cast<String, dynamic>(),
+      radioEndpoint: radioEndpoint?.cast<String, dynamic>(),
     );
+    // return YTSectionItem(
+    //   title: title ?? '',
+    //   id: id ?? '',
+    //   thumbnails: thumbnails,
+    //   type: getSectionItemType(type),
+    //   subtitle: subtitle,
+    //   endpoint: endpoint is Map ? endpoint : null,
+    //   shuffleEndpoint: shuffleEndpoint,
+    //   radioEndpoint: radioEndpoint,
+    //   isRectangle: isRectangle,
+    // );
   }
 
-  static YTSectionItem _musicMultiRowListItemRenderer(data) {
+  static YTItem? _musicMultiRowListItemRenderer(data) {
     // ["trackingParams","thumbnail","overlay","onTap","menu","subtitle","playbackProgress","title","description","displayStyle"]
     final thumbnails = traverseList(data['thumbnail'], [
       'musicThumbnailRenderer',
@@ -419,17 +470,31 @@ class Parser {
     final subtitle = traverseList(data['subtitle'], ['runs', 'text']).join('');
     final description = traverseString(data['description'], ['runs', 'text']);
 
-    return YTSectionItem(
-      title: title ?? '',
+    return YTItem.itemFrom(
+      getItemType(type),
       id: id ?? "",
-      thumbnails: thumbnails,
-      type: getSectionItemType(type),
+      title: title ?? "",
       subtitle: subtitle,
-      desctiption: description,
+      description: description ?? "",
+      playlistId: "",
+      thumbnails: thumbnails,
+      album: null,
+      artists: [],
+      endpoint: endpoint,
+      shuffleEndpoint: null,
+      radioEndpoint: null,
     );
+    // return YTSectionItem(
+    //   title: title ?? '',
+    //   id: id ?? "",
+    //   thumbnails: thumbnails,
+    //   type: getSectionItemType(type),
+    //   subtitle: subtitle,
+    //   desctiption: description,
+    // );
   }
 
-  static YTSectionItem _playlistPanelVideoRenderer(data) {
+  static YTItem? _playlistPanelVideoRenderer(data) {
     // "title", "longBylineText", "thumbnail", "lengthText", "selected", "navigationEndpoint", "videoId", "shortBylineText", "trackingParams", "menu", "playlistSetVideoId", "canReorder", "queueNavigationEndpoint"
     final title = traverseString(data['title'], ['runs', 'text']);
     final thumbnails = traverseList(data['thumbnail'], [
@@ -447,16 +512,16 @@ class Parser {
 
     final artists = artistsdata
         ?.map(
-          (json) => YTArtist(
+          (json) => YTArtistBasic(
             title: json['text'],
             endpoint: json['navigationEndpoint']['browseEndpoint'],
             id: json['navigationEndpoint']['browseEndpoint']['browseId'],
           ),
         )
         .toList();
-    YTAlbum? album;
-    if(albumData!=null){
-      album = YTAlbum(
+    YTAlbumBasic? album;
+    if (albumData != null) {
+      album = YTAlbumBasic(
         title: albumData['text'],
         endpoint: albumData['navigationEndpoint']['browseEndpoint'],
         id: albumData['navigationEndpoint']['browseEndpoint']['browseId'],
@@ -479,20 +544,41 @@ class Parser {
       'watchEndpointMusicConfig',
       'musicVideoType',
     ]);
-
-    return YTSectionItem(
+    return YTItem.itemFrom(
+      getItemType(type),
+      id: videoid,
       title: title ?? '',
       subtitle: subtitle,
-      id: videoid ?? "",
-      thumbnails: thumbnails,
-      artists: artists??[],
-      album: album,
-      endpoint: endpoint,
-      radioEndpoint: radio,
-      shuffleEndpoint: shuffle,
+      description: "",
       playlistId: playlistId,
-      type: getSectionItemType(type),
+      thumbnails: thumbnails,
+      album: album,
+      artists: artists ?? [],
+      endpoint: endpoint,
+      shuffleEndpoint: shuffle,
+      radioEndpoint: radio,
     );
+    // return YTSectionItem(
+    //   title: title ?? '',
+    //   subtitle: subtitle,
+    //   id: videoid ?? "",
+    //   thumbnails: thumbnails,
+    //   artists: artists ?? [],
+    //   album: album,
+    //   endpoint: endpoint,
+    //   radioEndpoint: radio,
+    //   shuffleEndpoint: shuffle,
+    //   playlistId: playlistId,
+    //   type: getSectionItemType(type),
+    // );
+  }
+
+  static YTButtonItem? _musicNavigationButtonRenderer(data) {
+    final title = traverseString(data['buttonText'], ['runs', 'text']);
+    final endpoint = traverse(data['clickCommand'], ['browseEndpoint']);
+    final id = traverseString(endpoint, ['browseId']);
+    if (title == null || endpoint == null) return null;
+    return YTButtonItem(title: title, endpoint: endpoint, id: id ?? "");
   }
 
   static YTPageHeader parsePageHeader(data) {
@@ -517,6 +603,7 @@ class Parser {
       'thumbnail',
       'thumbnails',
     ]).map((json) => YTThumbnail.fromJson(json)).toList();
+
     final buttons = data['buttons'];
 
     var playEndpoint = traverse(buttons, [

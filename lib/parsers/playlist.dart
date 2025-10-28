@@ -35,9 +35,9 @@ class PlaylistParser {
       ]),
     );
   }
-  static List<YTSectionItem> parseSongs(data){
+  static List<YTItem> parseSongs(data){
     final items = data['contents']['singleColumnMusicWatchNextResultsRenderer']['tabbedRenderer']['watchNextTabbedResultsRenderer']['tabs'][0]['tabRenderer']['content']['musicQueueRenderer']['content']['playlistPanelRenderer']['contents'];
-    return items.map((e) => Parser.parseSectionItem(e)).where((e) => e != null).toList().cast<YTSectionItem>();
+    return items.map((e) => Parser.parseSectionItem(e)).where((e) => e != null).toList().cast<YTItem>();
   }
 
   static YTPlaylistContinuationPage parseContinuation(data) {

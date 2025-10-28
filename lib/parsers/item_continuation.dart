@@ -1,7 +1,7 @@
 import 'package:ytmusic/models/item_continuation.dart';
+import 'package:ytmusic/models/yt_item.dart';
 import 'package:ytmusic/parsers/parser.dart';
 import 'package:ytmusic/utils/traverse.dart';
-import 'package:ytmusic/ytmusic.dart';
 
 class ItemContinuationParser {
   static YTItemContinuation parse(data) {
@@ -14,7 +14,7 @@ class ItemContinuationParser {
           .map((json) => Parser.parseSectionItem(json))
           .where((e) => e != null)
           .toList()
-          .cast<YTSectionItem>(),
+          .cast<YTItem>(),
       continuation: traverseString(head, [
         'continuations',
         'nextContinuationData',

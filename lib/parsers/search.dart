@@ -4,7 +4,7 @@ import 'package:ytmusic/utils/traverse.dart';
 import 'package:ytmusic/ytmusic.dart';
 
 class SearchParser {
-  static parse(data) {
+  static YTSearchPage parse(data) {
     final tabs = traverseList(data, [
       "contents",
       "tabbedSearchResultsRenderer",
@@ -40,7 +40,7 @@ class SearchParser {
           .map((e) => Parser.parseSectionItem(e))
           .where((e) => e != null)
           .toList()
-          .cast<YTSectionItem>(),
+          .cast<YTItem>(),
     );
   }
 

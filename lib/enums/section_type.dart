@@ -1,1 +1,1 @@
-enum YTSectionType { row, singleColumn, multiColumn, grid }
+enum YTSectionType { row, singleColumn, multiColumn,multiColumnRow, grid }

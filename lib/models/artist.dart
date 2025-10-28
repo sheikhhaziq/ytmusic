@@ -6,7 +6,7 @@ import 'package:ytmusic/utils/traverse.dart';
 part 'artist.g.dart';
 
 @JsonSerializable()
-class YTArtist {
+class YTArtistBasic {
   @JsonKey(readValue: _extractTitle)
   String title;
   @JsonKey(readValue: _extractBrowseId)
@@ -14,12 +14,12 @@ class YTArtist {
   @JsonKey(readValue: _extractEndpoint)
   Map endpoint;
 
-  YTArtist({required this.title, required this.id, required this.endpoint});
+  YTArtistBasic({required this.title, required this.id, required this.endpoint});
 
-  factory YTArtist.fromJson(Map<String, dynamic> json) =>
-      _$YTArtistFromJson(json);
+  factory YTArtistBasic.fromJson(Map<String, dynamic> json) =>
+      _$YTArtistBasicFromJson(json);
 
-  Map<String, dynamic> toJson() => _$YTArtistToJson(this);
+  Map<String, dynamic> toJson() => _$YTArtistBasicToJson(this);
 
   static _extractTitle(Map json, key) {
     return traverseString(json, ['text']) ?? '';
@@ -34,7 +34,7 @@ class YTArtist {
   }
 }
 
-@JsonSerializable()
+// @JsonSerializable()
 class YTArtistPage {
   YTPageHeader header;
   List<YTSection> sections;
@@ -46,8 +46,8 @@ class YTArtistPage {
     required this.continuation,
   });
 
-  factory YTArtistPage.fromJson(Map<String, dynamic> json) =>
-      _$YTArtistPageFromJson(json);
+  // factory YTArtistPage.fromJson(Map<String, dynamic> json) =>
+  //     _$YTArtistPageFromJson(json);
 
-  Map<String, dynamic> toJson() => _$YTArtistPageToJson(this);
+  // Map<String, dynamic> toJson() => _$YTArtistPageToJson(this);
 }

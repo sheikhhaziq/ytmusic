@@ -1,5 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ytmusic/utils/pretty_print.dart';
+import 'package:ytmusic/models/browse_page.dart';
+import 'package:ytmusic/models/chip_page.dart';
+import 'package:ytmusic/models/item_continuation.dart';
+import 'package:ytmusic/models/playlist.dart';
+import 'package:ytmusic/models/podcast.dart';
+import 'package:ytmusic/models/search.dart';
 
 import 'package:ytmusic/ytmusic.dart';
 
@@ -20,12 +25,12 @@ void main() async {
       continuation:
           "4qmFsgJmEiZNUFNQUExub3BJX21RTlRwOWJZbTZaZ19WVE5fSC04NlhFcjhsbBo8ZWg1UVZEcERSMUZwUlVSck1FOVZUa0pSVlZVMVQwVk5lRTFFUmtOT1ZFR1NBUU1JMlFqYUNBUUlBaEFC",
     );
-    pprint(res);
+    expect(res, isA<YTItemContinuation>());
   });
 
   test('Fetches Homepage Data', () async {
     final res = await ytmusic.getHomePage(limit: 5);
-    pprint(res);
+    expect(res, isA<YTHomePage>());
   });
 
   test('Fetches HomePage continuation', () async {
@@ -33,7 +38,7 @@ void main() async {
       continuation:
           "4qmFsgKhAhIMRkVtdXNpY19ob21lGpACQ0F4Nnh3RkhUbEJaTm5OcWVIZFpORVJYYjBWQ1EyNDRTMHBJYkRCWU0wSm9XakpXWm1NeU5XaGpTRTV2WWpOU1ptSllWbnBoVjA1bVkwZEdibHBXT1hsYVYyUndZakkxYUdKQ1NXWlpla0pTVmxoR1JGSlhkRTVpYTFaWFVWVlNSR0pZV25oalZtaHFXVzVCZVZadFdqUlNSMlJUWVhodk1sUllWbnBoVjA1RllWaE9hbUl6V214amJteFJXVmRrYkZVeVZubGtiV3hxV2xNeFNGcFlVa2xpTWpGc1ZVZEdibHBSUVVKQlIxWjFRVUZHU2xSblFVSlRWVFJCUVZGRlJDMXdla2gyVVd0RFEwRXc%3D",
     );
-    pprint(res);
+    expect(res, isA<YTHomeContinuationPage>());
   });
 
   test('Fetches Chip Screen', () async {
@@ -41,10 +46,10 @@ void main() async {
       body: {
         "browseId": "FEmusic_home",
         "params":
-            "ggNCSgQIDBADSgQIBBABSgQIBxABSgQIAxABSgQICRABSgQICBABSgQIDRABSgQIDhABSgQIChABSgQIBhABSgQIBRAB",
+            "ggNCSgQIDBADSgQIBxABSgQIBBABSgQICRABSgQIDRABSgQIAxABSgQICBABSgQIDhABSgQIChABSgQIBhABSgQIBRAB",
       },
     );
-    pprint(res);
+    expect(res, isA<YTChipPage>());
   });
 
   test('Fetches Chip Screen continuation', () async {
@@ -52,19 +57,19 @@ void main() async {
       body: {
         "browseId": "FEmusic_home",
         "params":
-            "ggNCSgQIDBADSgQIBBABSgQIBxABSgQIAxABSgQICRABSgQICBABSgQIDRABSgQIDhABSgQIChABSgQIBhABSgQIBRAB",
+            "ggNCSgQIDBADSgQIBxABSgQIBBABSgQICRABSgQIDRABSgQIAxABSgQICBABSgQIDhABSgQIChABSgQIBhABSgQIBRAB",
       },
       continuation:
-          "4qmFsgKJAxIMRkVtdXNpY19ob21lGvgCQ0FONnl3RkhVSEZZZEdFMlYzZzBORVJYYjFGQ1EyOUZRa05wVWpWa1JqbDNXVmRrYkZnelRuVlpXRUo2WVVjNU1GZ3lNVEZqTW14cVdETkNhRm95Vm1aamJWWnVZVmM1ZFZsWGQxTklNbk0xV1cxU2RsbFZValZpTW5CT1ZWVXhTbFl3Vmt4VGEzZDZZMU14UW1FelNuRk9NMmh1VlcxellVOUZNVEZqTW14cVVrZHNlbGt5T1RKYVdFbzFWVWRHYmxwV1RteGpibHB3V1RKVmRGSXlWakJUUnpsMFdsWkNhRm95VlVGQlVVSnNZbWRCUWxOVk5FRkJWV3hQUVVGRlFrRjNSVTB0Y0hwSWRsRnJRME5CVVlJRFFrb0VDQXdRQTBvRUNBUVFBVW9FQ0FjUUFVb0VDQU1RQVVvRUNBa1FBVW9FQ0FnUUFVb0VDQTBRQVVvRUNBNFFBVW9FQ0FvUUFVb0VDQVlRQVVvRUNBVVFBUSUzRCUzRA%3D%3D",
+          "4qmFsgKJAxIMRkVtdXNpY19ob21lGvgCQ0FONnl3RkhTMUJCYWpoeVJIWktRVVJYYjFGQ1EyOUZRa05wVWpWa1JqbDNXVmRrYkZnelRuVlpXRUo2WVVjNU1GZ3lNVEZqTW14cVdETkNhRm95Vm1aamJWWnVZVmM1ZFZsWGQxTklNR3Q1VVROV2VGZEZkRzFVYlRreldWVkdSVkV5TVRKaldFWlpXVEpLZVZaNmFESmpSbXgyVlcxellVOUZNVEZqTW14cVVrZHNlbGt5T1RKYVdFbzFWVWRHYmxwV1RteGpibHB3V1RKVmRGSXlWakJUUnpsMFdsWkNhRm95VlVGQlVVSnNZbWRCUWxOVk5FRkJWV3hQUVVGRlFrRjNSVTB0Y0hwSWRsRnJRME5CVVlJRFFrb0VDQXdRQTBvRUNBY1FBVW9FQ0FRUUFVb0VDQWtRQVVvRUNBMFFBVW9FQ0FNUUFVb0VDQWdRQVVvRUNBNFFBVW9FQ0FvUUFVb0VDQVlRQVVvRUNBVVFBUSUzRCUzRA%3D%3D",
     );
-    pprint(res);
+    expect(res, isA<YTChipContinuationPage>());
   });
 
   test('Browse More songs', () async {
     final res = await ytmusic.browseMore(
-      body: {"browseId": "FEmusic_charts", "params": "sgYMRkVtdXNpY19ob21l"},
+      body: {"browseId": "VLPL4fGSI1pDJn5oibdgJt8Hy0-dr2B7kSs2", "browseEndpointContextSupportedConfigs": {"browseEndpointContextMusicConfig": {"pageType": "MUSIC_PAGE_TYPE_PLAYLIST"}}},
     );
-    pprint(res);
+    expect(res, isA<YTBrowsePage>());
   });
 
   test('Get Playlist Page', () async {
@@ -78,11 +83,11 @@ void main() async {
         },
       },
     );
-    pprint(res);
+    expect(res, isA<YTPlaylistPage>());
   });
 
-  test("Get playlist Songs", ()async {
-    final res =await ytmusic.getNextSongs(
+  test("Get playlist Songs", () async {
+    final res = await ytmusic.getNextSongs(
       body: {
         "videoId": "rvGbTsXPu9A",
         "playlistId": "RDAMVMrvGbTsXPu9A",
@@ -99,7 +104,7 @@ void main() async {
         },
       },
     );
-    pprint(res);
+    expect(res, isA<List<YTItem>>());
   });
   test('Get Playlist continuation Page', () async {
     final res = await ytmusic.getPlaylistSectionContinuation(
@@ -114,7 +119,7 @@ void main() async {
       continuation:
           "4qmFsgI9Ei1WTFJEQ0xBSzV1eV9sQk5VdGVCUmVuY0h6S2VsdTVpREh3TEY2bVlxakwtSlUaDGtnRURDTTBHOEFFQQ%3D%3D",
     );
-    pprint(res);
+    expect(res, isA<YTPlaylistContinuationPage>());
   });
 
   test('Get Album Page', () async {
@@ -130,13 +135,13 @@ void main() async {
         },
       },
     );
-    pprint(res);
+    expect(res, isA<YTAlbumPage>());
   });
 
   test('Get Artist Page', () async {
     final res = await ytmusic.getArtist(
       body: {
-        "browseId": "UCZQUb-qB6nViYaPABPYGxQA",
+        "browseId": "UCedvOgsKFzcK3hA5taf3KoQ",
         "browseEndpointContextSupportedConfigs": {
           "browseEndpointContextMusicConfig": {
             "pageType": "MUSIC_PAGE_TYPE_ARTIST",
@@ -144,7 +149,7 @@ void main() async {
         },
       },
     );
-    pprint(res);
+    expect(res, isA<YTArtistPage>());
   });
 
   test('Get Podcast Page', () async {
@@ -158,7 +163,7 @@ void main() async {
         },
       },
     );
-    pprint(res);
+    expect(res, isA<YTPodcastPage>());
   });
 
   test('Get Podcast Page Continuation', () async {
@@ -172,17 +177,22 @@ void main() async {
         },
       },
       continuation:
-          "4qmFsgJmEiZNUFNQUExoUGVpdWtLSENIRlJ3S3ZiZllEMFo4RG5zSWM2bFlFYho8ZWg1UVZEcERSMUZwUlVWVk0wNUZUVEJOYWtKRlRsUkNSVTFVYUVKUmFsV1NBUU1JMlFqYUNBUUlBaEFC",
+          "4qmFsgJuEiZNUFNQUExoUGVpdWtLSENIRlJ3S3ZiZllEMFo4RG5zSWM2bFlFYhpEZWg5UVZEcERTa0ZFU1doQk1WSkVWWHBTYWtwR1VUQlpNRTFWU1ROT2VsVXhrZ0VEQ05rSTJnZ0VDQUlRQVElM0QlM0Q%3D",
     );
-    pprint(res);
+    expect(res, isA<YTPodcastContinuationPage>());
   });
 
   test('Get Search Suggestions', () async {
     final res = await ytmusic.getSearchSuggestions(query: "za");
-    pprint(res);
+    expect(res, isA<YTSearchSuggestions>());
   });
   test('Get Search Page', () async {
     final res = await ytmusic.getSearch(query: "kahani suno 2.0");
-    pprint(res);
+    expect(res, isA<YTSearchPage>());
+  });
+  test('Get Explore Page', () async {
+    final res = await ytmusic.getExplore();
+    // print(res.length);
+    expect(res, isA<List<YTSection>>());
   });
 }

@@ -1,10 +1,9 @@
-import 'package:json_annotation/json_annotation.dart';
 import 'package:ytmusic/models/browse_page.dart';
 import 'package:ytmusic/models/models.dart';
 
-part 'playlist.g.dart';
+// part 'playlist.g.dart';
 
-@JsonSerializable()
+// @JsonSerializable()
 class YTPlaylistPage {
   YTPageHeader header;
   List<YTSection> sections;
@@ -16,13 +15,13 @@ class YTPlaylistPage {
     required this.continuation,
   });
 
-  factory YTPlaylistPage.fromJson(Map<String, dynamic> json) =>
-      _$YTPlaylistPageFromJson(json);
+  // factory YTPlaylistPage.fromJson(Map<String, dynamic> json) =>
+  //     _$YTPlaylistPageFromJson(json);
 
-  Map<String, dynamic> toJson() => _$YTPlaylistPageToJson(this);
+  // Map<String, dynamic> toJson() => _$YTPlaylistPageToJson(this);
 }
 
-@JsonSerializable()
+// @JsonSerializable()
 class YTPlaylistContinuationPage {
   List<YTSection> sections;
   String? continuation;
@@ -32,8 +31,8 @@ class YTPlaylistContinuationPage {
     required this.continuation,
   });
 
-  factory YTPlaylistContinuationPage.fromJson(Map<String, dynamic> json) =>
-      _$YTPlaylistContinuationPageFromJson(json);
+  // factory YTPlaylistContinuationPage.fromJson(Map<String, dynamic> json) =>
+  //     _$YTPlaylistContinuationPageFromJson(json);
 
-  Map<String, dynamic> toJson() => _$YTPlaylistContinuationPageToJson(this);
+  // Map<String, dynamic> toJson() => _$YTPlaylistContinuationPageToJson(this);
 }

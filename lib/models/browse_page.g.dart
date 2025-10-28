@@ -6,18 +6,6 @@ part of 'browse_page.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-YTBrowsePage _$YTBrowsePageFromJson(Map<String, dynamic> json) => YTBrowsePage(
-  header: json['header'] == null
-      ? null
-      : YTPageHeader.fromJson(json['header'] as Map<String, dynamic>),
-  sections: (json['sections'] as List<dynamic>)
-      .map((e) => YTSection.fromJson(e as Map<String, dynamic>))
-      .toList(),
-);
-
-Map<String, dynamic> _$YTBrowsePageToJson(YTBrowsePage instance) =>
-    <String, dynamic>{'header': instance.header, 'sections': instance.sections};
-
 YTPageHeader _$YTPageHeaderFromJson(Map<String, dynamic> json) => YTPageHeader(
   title: json['title'] as String,
   subtitle: json['subtitle'] as String,

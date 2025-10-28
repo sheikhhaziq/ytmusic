@@ -30,3 +30,37 @@ YTSectionItemType getSectionItemType(String? value) {
       return YTSectionItemType.unknown;
   }
 }
+
+
+enum YTItemType {
+  episode,
+  album,
+  playlist,
+  podcast,
+  song,
+  video,
+  artist,
+  unknown,
+}
+
+YTItemType getItemType(String? value) {
+  switch (value) {
+    case 'MUSIC_PAGE_TYPE_NON_MUSIC_AUDIO_TRACK_PAGE':
+      return YTItemType.episode;
+    case 'MUSIC_PAGE_TYPE_ALBUM':
+      return YTItemType.album;
+    case 'MUSIC_PAGE_TYPE_PLAYLIST':
+      return YTItemType.playlist;
+    case 'MUSIC_PAGE_TYPE_PODCAST_SHOW_DETAIL_PAGE':
+      return YTItemType.podcast;
+    case 'MUSIC_VIDEO_TYPE_ATV':
+      return YTItemType.song;
+    case 'MUSIC_VIDEO_TYPE_OMV':
+    case 'MUSIC_VIDEO_TYPE_UGC':
+      return YTItemType.video;
+    case 'MUSIC_PAGE_TYPE_ARTIST':
+      return YTItemType.artist;
+    default:
+      return YTItemType.unknown;
+  }
+}

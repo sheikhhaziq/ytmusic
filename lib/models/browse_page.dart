@@ -4,17 +4,17 @@ import 'package:ytmusic/models/thumbnail.dart';
 
 part 'browse_page.g.dart';
 
-@JsonSerializable()
+// @JsonSerializable()
 class YTBrowsePage {
   YTPageHeader? header;
   List<YTSection> sections;
 
   YTBrowsePage({this.header, required this.sections});
 
-  factory YTBrowsePage.fromJson(Map<String, dynamic> json) =>
-      _$YTBrowsePageFromJson(json);
+  // factory YTBrowsePage.fromJson(Map<String, dynamic> json) =>
+  //     _$YTBrowsePageFromJson(json);
 
-  Map<String, dynamic> toJson() => _$YTBrowsePageToJson(this);
+  // Map<String, dynamic> toJson() => _$YTBrowsePageToJson(this);
 }
 
 @JsonSerializable()

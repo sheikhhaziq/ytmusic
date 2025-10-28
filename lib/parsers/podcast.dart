@@ -32,7 +32,7 @@ class PodcastParser {
     );
   }
 
-  static parseContinuation(data) {
+  static YTPodcastContinuationPage parseContinuation(data) {
     final sectionsData = traverseList(data, [
       'continuationContents',
       'musicShelfContinuation',
