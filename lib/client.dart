@@ -143,11 +143,16 @@ class YTClient {
         "key": "AIzaSyC9XL3ZjWddXya6X74dJoCTL-WEYFDNX30",
       },
     );
+    final DateTime now = DateTime.now();
+    final String year = now.year.toString();
+    final String month = now.month.toString().padLeft(2, '0');
+    final String day = now.day.toString().padLeft(2, '0');
+    final String date = year + month + day;
     final context = {
       "context": {
         "client": {
           "clientName": "WEB_REMIX",
-          "clientVersion": _timestamp,
+          "clientVersion": '1.$date.01.00',
           "gl": config.location,
           "hl": config.language,
           "visitorData": config.visitorData,
