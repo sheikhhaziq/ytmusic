@@ -1,17 +1,24 @@
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
+import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
+import 'package:http_cache_drift_store/http_cache_drift_store.dart';
 import 'package:ytmusic/ytmusic.dart';
 
 class YTClient {
   YTConfig config;
   late CookieJar _cookieJar;
   late Dio _dio;
-  late String _timestamp;
+  String? cacheDatabasePath;
   final void Function(YTConfig)? onConfigUpdate;
-  YTClient(this.config, cookies,{this.onConfigUpdate}) {
+  YTClient(
+    this.config,
+    cookies, {
+    this.onConfigUpdate,
+    this.cacheDatabasePath,
+  }) {
     _setupDio();
+    _addCacheInterceptor();
     _setupCookies(cookies);
-    _setupTimestamp();
   }
 
   _setupCookies(String? cookies) {
@@ -68,13 +75,19 @@ class YTClient {
     );
   }
 
-  _setupTimestamp() {
-    final DateTime now = DateTime.now();
-    final String year = now.year.toString();
-    final String month = now.month.toString().padLeft(2, '0');
-    final String day = now.day.toString().padLeft(2, '0');
-    final String date = year + month + day;
-    _timestamp = '1.$date.01.00';
+  _addCacheInterceptor() {
+    if (cacheDatabasePath != null) {
+      _dio.interceptors.add(
+        DioCacheInterceptor(
+          options: CacheOptions(
+            store: DriftCacheStore(databasePath: cacheDatabasePath!),
+            hitCacheOnNetworkFailure: true,
+            maxStale: Duration(days: 7),
+            allowPostMethod: false,
+          ),
+        ),
+      );
+    }
   }
 
   static Future<YTConfig?> fetchConfig() async {
@@ -126,11 +139,11 @@ class YTClient {
       "Accept-Language": "en",
       "X-Goog-Visitor-Id": config.visitorData,
     };
-    if(config.visitorData.trim().isEmpty){
+    if (config.visitorData.trim().isEmpty) {
       final c = await fetchConfig();
-      if(c!=null){
-        config=c;
-        if(onConfigUpdate!=null){
+      if (c != null) {
+        config = c;
+        if (onConfigUpdate != null) {
           onConfigUpdate!(c);
         }
       }

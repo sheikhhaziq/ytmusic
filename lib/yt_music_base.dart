@@ -22,17 +22,22 @@ class YTMusic {
   late YTClient _client;
   void Function(YTConfig)? onConfigUpdate;
 
-
-  YTMusic({String? cookies, YTConfig? config,this.onConfigUpdate}) {
+  YTMusic({
+    String? cookies,
+    String? cacheDatabasePath,
+    YTConfig? config,
+    this.onConfigUpdate,
+  }) {
     _client = YTClient(
       config ?? YTConfig(visitorData: "", language: "en", location: "IN"),
       cookies,
-      onConfigUpdate:onConfigUpdate 
+      onConfigUpdate: onConfigUpdate,
+      cacheDatabasePath: cacheDatabasePath,
     );
   }
 
-  void setConfig(YTConfig config){
-    _client.config=config;
+  void setConfig(YTConfig config) {
+    _client.config = config;
   }
 
   static Future<YTConfig?> fetchConfig() => YTClient.fetchConfig();
@@ -141,7 +146,7 @@ class YTMusic {
 
   Future<YTAlbumPage> getAlbum({required Map<String, dynamic> body}) async {
     final data = await _client.constructRequest("browse", body: body);
-    if(data['contents']==null){
+    if (data['contents'] == null) {
       throw Exception("Not Found");
     }
     return AlbumParser.parse(data);
@@ -187,7 +192,7 @@ class YTMusic {
     return SearchParser.parse(data);
   }
 
-  Future<List<YTSection>> getExplore()async{
+  Future<List<YTSection>> getExplore() async {
     final data = await _client.constructRequest(
       "browse",
       body: {"browseId": "FEmusic_explore"},
