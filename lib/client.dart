@@ -81,6 +81,7 @@ class YTClient {
         DioCacheInterceptor(
           options: CacheOptions(
             store: DriftCacheStore(databasePath: cacheDatabasePath!),
+            hitCacheOnErrorCodes: [500, 502, 503],
             hitCacheOnNetworkFailure: true,
             maxStale: Duration(days: 7),
             allowPostMethod: false,
