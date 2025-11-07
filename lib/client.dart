@@ -77,14 +77,20 @@ class YTClient {
 
   _addCacheInterceptor() {
     if (cacheDatabasePath != null) {
+      print('cache path: $cacheDatabasePath');
       _dio.interceptors.add(
         DioCacheInterceptor(
           options: CacheOptions(
-            store: DriftCacheStore(databasePath: cacheDatabasePath!),
-            hitCacheOnErrorCodes: [500, 502, 503],
+            store: DriftCacheStore(
+              databasePath: cacheDatabasePath!,
+              logStatements: true,
+            ),
+            // hitCacheOnErrorCodes: [500, 502, 503],
             hitCacheOnNetworkFailure: true,
             maxStale: Duration(days: 7),
-            allowPostMethod: false,
+            allowPostMethod: true,
+            policy: CachePolicy.request,
+            priority: CachePriority.high,
           ),
         ),
       );
@@ -190,7 +196,7 @@ class YTClient {
         return jsonData;
       }
     } on DioException catch (e) {
-      throw "Error${e.response!.statusMessage}";
+      throw "Error${e.message}";
     }
   }
 }

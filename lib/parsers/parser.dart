@@ -74,7 +74,9 @@ class Parser {
     return YTSection(
       title: traverseString(header, ['title', 'runs', 'text']) ?? '',
       strapline: traverseString(header, ['strapline', 'runs', 'text']),
-      itemsPerColumn:data['numItemsPerColumn'] !=null ? int.tryParse(data['numItemsPerColumn']):null,
+      itemsPerColumn: data['numItemsPerColumn'] != null
+          ? int.tryParse(data['numItemsPerColumn'])
+          : null,
       trailing: endpoint is Map
           ? YTSectionTrailing(
               text:
@@ -100,7 +102,7 @@ class Parser {
           ? YTSectionType.multiColumnRow
           : contentsData.firstOrNull?['musicMultiRowListItemRenderer'] != null
           ? YTSectionType.multiColumn
-          : contentsData.firstOrNull?['musicResponsiveListItemRenderer'] !=null
+          : contentsData.firstOrNull?['musicResponsiveListItemRenderer'] != null
           ? YTSectionType.multiColumn
           : YTSectionType.row,
       // type: data['numItemsPerColumn'] != null
@@ -550,7 +552,7 @@ class Parser {
       title: title ?? '',
       subtitle: subtitle,
       description: "",
-      playlistId: playlistId,
+      playlistId: playlistId ?? '',
       thumbnails: thumbnails,
       album: album,
       artists: artists ?? [],

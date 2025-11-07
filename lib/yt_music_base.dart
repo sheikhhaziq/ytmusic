@@ -59,6 +59,7 @@ class YTMusic {
       "browse",
       body: {"browseId": 'FEmusic_home'},
     );
+
     // final home = await runInIsolate(HomePageParser.parse, data);
     final home = HomePageParser.parse(data);
     while (home.sections.length < limit && home.continuation != null) {
