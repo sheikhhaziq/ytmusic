@@ -1,10 +1,8 @@
+import 'package:gyawun_shared/gyawun_shared.dart';
 import 'package:ytmusic/client.dart';
-import 'package:ytmusic/models/browse_page.dart';
-import 'package:ytmusic/models/chip_page.dart';
+import 'package:ytmusic/models/continuation_page.dart';
 import 'package:ytmusic/models/item_continuation.dart';
 import 'package:ytmusic/models/models.dart';
-import 'package:ytmusic/models/playlist.dart';
-import 'package:ytmusic/models/podcast.dart';
 import 'package:ytmusic/models/search.dart';
 import 'package:ytmusic/parsers/album.dart';
 import 'package:ytmusic/parsers/artist.dart';
@@ -42,7 +40,7 @@ class YTMusic {
 
   static Future<YTConfig?> fetchConfig() => YTClient.fetchConfig();
 
-  Future<YTItemContinuation> getContinuationItems({
+  Future<SectionItemContinuation> getContinuationItems({
     required Map<String, dynamic> body,
     required String continuation,
   }) async {
@@ -54,7 +52,7 @@ class YTMusic {
     return ItemContinuationParser.parse(data);
   }
 
-  Future<YTHomePage> getHomePage({int limit = 1}) async {
+  Future<Page> getHomePage({int limit = 1}) async {
     final data = await _client.constructRequest(
       "browse",
       body: {"browseId": 'FEmusic_home'},
@@ -72,7 +70,7 @@ class YTMusic {
     return home;
   }
 
-  Future<YTHomeContinuationPage> getHomePageContinuation({
+  Future<ContinuationPage> getHomePageContinuation({
     required String continuation,
   }) async {
     final data = await _client.constructRequest(
@@ -85,7 +83,7 @@ class YTMusic {
     return HomePageParser.parseContinuation(data);
   }
 
-  Future<YTChipPage> getChipPage({
+  Future<Page> getChipPage({
     required Map<String, dynamic> body,
     int limit = 1,
   }) async {
@@ -102,7 +100,7 @@ class YTMusic {
     return chip;
   }
 
-  Future<YTChipContinuationPage> getChipPageContinuation({
+  Future<ContinuationPage> getChipPageContinuation({
     required Map<String, dynamic> body,
     required String continuation,
   }) async {
@@ -114,26 +112,24 @@ class YTMusic {
     return runInIsolate(ChipPageParser.parseContinuation, data);
   }
 
-  Future<YTBrowsePage> browseMore({required Map<String, dynamic> body}) async {
+  Future<Page> browseMore({required Map<String, dynamic> body}) async {
     final data = await _client.constructRequest("browse", body: body);
     return BrowseParser.parse(data);
   }
 
-  Future<YTPlaylistPage> getPlaylist({
-    required Map<String, dynamic> body,
-  }) async {
+  Future<Page> getPlaylist({required Map<String, dynamic> body}) async {
     final data = await _client.constructRequest("browse", body: body);
     return runInIsolate(PlaylistParser.parse, data);
   }
 
-  Future<List<YTItem>> getNextSongs({
+  Future<List<SectionItem>> getNextSongs({
     required Map<String, dynamic> body,
   }) async {
     final data = await _client.constructRequest("next", body: body);
     return PlaylistParser.parseSongs(data);
   }
 
-  Future<YTPlaylistContinuationPage> getPlaylistSectionContinuation({
+  Future<ContinuationPage> getPlaylistSectionContinuation({
     required Map<String, dynamic> body,
     required String continuation,
   }) async {
@@ -145,7 +141,7 @@ class YTMusic {
     return runInIsolate(PlaylistParser.parseContinuation, data);
   }
 
-  Future<YTAlbumPage> getAlbum({required Map<String, dynamic> body}) async {
+  Future<Page> getAlbum({required Map<String, dynamic> body}) async {
     final data = await _client.constructRequest("browse", body: body);
     if (data['contents'] == null) {
       throw Exception("Not Found");
@@ -153,17 +149,17 @@ class YTMusic {
     return AlbumParser.parse(data);
   }
 
-  Future<YTArtistPage> getArtist({required Map<String, dynamic> body}) async {
+  Future<Page> getArtist({required Map<String, dynamic> body}) async {
     final data = await _client.constructRequest("browse", body: body);
     return ArtistParser.parse(data);
   }
 
-  Future<YTPodcastPage> getPodcast({required Map<String, dynamic> body}) async {
+  Future<Page> getPodcast({required Map<String, dynamic> body}) async {
     final data = await _client.constructRequest("browse", body: body);
     return PodcastParser.parse(data);
   }
 
-  Future<YTPodcastContinuationPage> getPodcastContinuation({
+  Future<ContinuationPage> getPodcastContinuation({
     required Map<String, dynamic> body,
     required String continuation,
   }) async {
@@ -185,7 +181,7 @@ class YTMusic {
     return SearchParser.parseSuggestions(data);
   }
 
-  Future<YTSearchPage> getSearch({required String query}) async {
+  Future<Page> getSearch({required String query}) async {
     final data = await _client.constructRequest(
       "search",
       body: {"query": query},
@@ -193,7 +189,7 @@ class YTMusic {
     return SearchParser.parse(data);
   }
 
-  Future<List<YTSection>> getExplore() async {
+  Future<List<Section>> getExplore() async {
     final data = await _client.constructRequest(
       "browse",
       body: {"browseId": "FEmusic_explore"},

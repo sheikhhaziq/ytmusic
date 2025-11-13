@@ -1,9 +1,9 @@
+import 'package:gyawun_shared/gyawun_shared.dart';
 import 'package:ytmusic/parsers/parser.dart';
 import 'package:ytmusic/utils/traverse.dart';
-import 'package:ytmusic/ytmusic.dart';
 
 class ArtistParser {
-  static YTArtistPage parse(data) {
+  static Page parse(data) {
     // ["responseContext","contents","header","trackingParams"]
     final header = traverse(data, ['header', 'musicImmersiveHeaderRenderer']);
 
@@ -17,14 +17,15 @@ class ArtistParser {
       "contents",
     ]);
 
-    return YTArtistPage(
+    return Page(
       header: Parser.parsePageHeader(header),
       sections: sectionsdata
           .map((json) => Parser.parseSection(json))
           .where((e) => e != null)
           .toList()
-          .cast<YTSection>(),
+          .cast<Section>(),
       continuation: null,
+      provider: DataProvider.ytmusic,
     );
   }
 }

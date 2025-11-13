@@ -1,16 +1,8 @@
-import 'package:ytmusic/models/yt_item.dart';
+import 'package:gyawun_shared/gyawun_shared.dart';
 
-// part 'item_continuation.g.dart';
-
-// @JsonSerializable()
-class YTItemContinuation {
-  List<YTItem> items;
+class SectionItemContinuation {
+  List<SectionItem> items;
   String? continuation;
 
-  YTItemContinuation({required this.items, required this.continuation});
-
-  // factory YTItemContinuation.fromJson(Map<String, dynamic> json) =>
-  //     _$YTItemContinuationFromJson(json);
-
-  // Map<String, dynamic> toJson() => _$YTItemContinuationToJson(this);
+  SectionItemContinuation({required this.items, required this.continuation});
 }

@@ -1,10 +1,10 @@
+import 'package:gyawun_shared/gyawun_shared.dart';
 import 'package:ytmusic/models/search.dart';
 import 'package:ytmusic/parsers/parser.dart';
 import 'package:ytmusic/utils/traverse.dart';
-import 'package:ytmusic/ytmusic.dart';
 
 class SearchParser {
-  static YTSearchPage parse(data) {
+  static Page parse(data) {
     final tabs = traverseList(data, [
       "contents",
       "tabbedSearchResultsRenderer",
@@ -16,12 +16,14 @@ class SearchParser {
       "sectionListRenderer",
       "contents",
     ]);
-    return YTSearchPage(
+    return Page(
       sections: contentsdata
           .map((Parser.parseSection))
           .where((e) => e != null)
           .toList()
-          .cast<YTSection>(),
+          .cast<Section>(),
+      header: null,
+      provider: DataProvider.ytmusic,
     );
   }
 
@@ -40,7 +42,7 @@ class SearchParser {
           .map((e) => Parser.parseSectionItem(e))
           .where((e) => e != null)
           .toList()
-          .cast<YTItem>(),
+          .cast<SectionItem>(),
     );
   }
 

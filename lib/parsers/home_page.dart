@@ -1,11 +1,10 @@
-import 'package:ytmusic/models/chip.dart';
-import 'package:ytmusic/models/home_page.dart';
-import 'package:ytmusic/models/section.dart';
+import 'package:gyawun_shared/gyawun_shared.dart';
+import 'package:ytmusic/models/continuation_page.dart';
 import 'package:ytmusic/parsers/parser.dart';
 import 'package:ytmusic/utils/traverse.dart';
 
 class HomePageParser {
-  static YTHomePage parse(data) {
+  static Page parse(data) {
     final head = traverse(data, [
       'contents',
       'singleColumnBrowseResultsRenderer',
@@ -25,26 +24,28 @@ class HomePageParser {
         .map(Parser.parseSection)
         .where((section) => section != null)
         .toList()
-        .cast<YTSection>();
+        .cast<Section>();
     final continuations = traverseString(head['continuations'], [
       'continuation',
     ]);
-    return YTHomePage(
+    return Page(
       chips: chips,
       sections: sections,
       continuation: continuations,
+      header: null,
+      provider: DataProvider.ytmusic,
     );
   }
 
-  static YTChip _parseChips(data) {
+  static ChipItem _parseChips(data) {
     final chipData = data['chipCloudChipRenderer'];
-    return YTChip(
+    return ChipItem(
       title: traverseString(chipData, ['text', 'runs', 'text']) ?? "",
       endpoint: traverse(chipData, ['navigationEndpoint', 'browseEndpoint']),
     );
   }
 
-  static YTHomeContinuationPage parseContinuation(data) {
+  static ContinuationPage parseContinuation(data) {
     // ["responseContext","contents","continuationContents","trackingParams","maxAgeStoreSeconds"]
     final home = traverse(data, [
       'continuationContents',
@@ -58,11 +59,8 @@ class HomePageParser {
     final sections = sectionData
         .map((json) => Parser.parseSection(json))
         .toList()
-        .cast<YTSection>();
+        .cast<Section>();
 
-    return YTHomeContinuationPage(
-      sections: sections,
-      continuation: continuation,
-    );
+    return ContinuationPage(sections: sections, continuation: continuation);
   }
 }

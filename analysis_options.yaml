@@ -1,4 +1,32 @@
 include: package:flutter_lints/flutter.yaml
 
-# Additional information about this file can be found at
-# https://dart.dev/guides/language/analysis-options
+analyzer:
+  exclude:
+    - build/**
+    - "**/*.freezed.dart"
+    - "**/*.g.dart"
+
+linter:
+  rules:
+    # Style & Organization
+    prefer_single_quotes: false
+    sort_constructors_first: true
+    sort_pub_dependencies: true
+
+    # Const correctness & performance
+    prefer_const_constructors: true
+    prefer_const_literals_to_create_immutables: true
+    prefer_const_declarations: true
+    unnecessary_const: true
+
+    # Safety & Logic
+    avoid_print: true
+    avoid_type_to_string: true
+    avoid_empty_else: true
+    avoid_returning_null_for_void: true
+
+    # Clarity & Formatting
+    prefer_expression_function_bodies: false
+    omit_local_variable_types: false
+    require_trailing_commas: true
+    use_full_hex_values_for_flutter_colors: true

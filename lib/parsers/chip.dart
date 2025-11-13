@@ -1,10 +1,10 @@
-import 'package:ytmusic/models/chip_page.dart';
-import 'package:ytmusic/models/section.dart';
+import 'package:gyawun_shared/gyawun_shared.dart';
+import 'package:ytmusic/models/continuation_page.dart';
 import 'package:ytmusic/parsers/parser.dart';
 import 'package:ytmusic/utils/traverse.dart';
 
 class ChipPageParser {
-  static YTChipPage parse(data) {
+  static Page parse(data) {
     final head = traverse(data, [
       'contents',
       'singleColumnBrowseResultsRenderer',
@@ -19,14 +19,19 @@ class ChipPageParser {
         .map(Parser.parseSection)
         .where((section) => section != null)
         .toList()
-        .cast<YTSection>();
+        .cast<Section>();
     final continuations = traverseString(head['continuations'], [
       'continuation',
     ]);
-    return YTChipPage(sections: sections, continuation: continuations);
+    return Page(
+      sections: sections,
+      continuation: continuations,
+      header: null,
+      provider: DataProvider.ytmusic,
+    );
   }
 
-  static YTChipContinuationPage parseContinuation(data) {
+  static ContinuationPage parseContinuation(data) {
     // ["responseContext","contents","continuationContents","trackingParams","maxAgeStoreSeconds"]
     final home = traverse(data, [
       'continuationContents',
@@ -40,11 +45,8 @@ class ChipPageParser {
     final sections = sectionData
         .map((json) => Parser.parseSection(json))
         .toList()
-        .cast<YTSection>();
+        .cast<Section>();
 
-    return YTChipContinuationPage(
-      sections: sections,
-      continuation: continuation,
-    );
+    return ContinuationPage(sections: sections, continuation: continuation);
   }
 }

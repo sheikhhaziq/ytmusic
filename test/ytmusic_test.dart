@@ -1,16 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ytmusic/models/browse_page.dart';
-import 'package:ytmusic/models/chip_page.dart';
+import 'package:gyawun_shared/gyawun_shared.dart';
+import 'package:ytmusic/models/continuation_page.dart';
 import 'package:ytmusic/models/item_continuation.dart';
-import 'package:ytmusic/models/playlist.dart';
-import 'package:ytmusic/models/podcast.dart';
 import 'package:ytmusic/models/search.dart';
 
 import 'package:ytmusic/ytmusic.dart';
 
 void main() async {
   final config = await YTMusic.fetchConfig();
-  final ytmusic = YTMusic(config: config);
+  final c = YTConfig(
+    visitorData: 'CgtyMmtCeERiTjd0USiJwbDHBjIKCgJJThIEGgAgOA%3D%3D',
+    language: config?.language ?? '',
+    location: config?.location ?? "",
+  );
+  final ytmusic = YTMusic(config: c);
 
   test('Fetches Continuation Item', () async {
     final res = await ytmusic.getContinuationItems(
@@ -25,12 +28,12 @@ void main() async {
       continuation:
           "4qmFsgJmEiZNUFNQUExub3BJX21RTlRwOWJZbTZaZ19WVE5fSC04NlhFcjhsbBo8ZWg1UVZEcERSMUZwUlVSck1FOVZUa0pSVlZVMVQwVk5lRTFFUmtOT1ZFR1NBUU1JMlFqYUNBUUlBaEFC",
     );
-    expect(res, isA<YTItemContinuation>());
+    expect(res, isA<SectionItemContinuation>());
   });
 
   test('Fetches Homepage Data', () async {
-    final res = await ytmusic.getHomePage(limit: 5);
-    expect(res, isA<YTHomePage>());
+    final res = await ytmusic.getHomePage(limit: 10);
+    expect(res, isA<Page>());
   });
 
   test('Fetches HomePage continuation', () async {
@@ -38,7 +41,7 @@ void main() async {
       continuation:
           "4qmFsgKhAhIMRkVtdXNpY19ob21lGpACQ0F4Nnh3RkhUbEJaTm5OcWVIZFpORVJYYjBWQ1EyNDRTMHBJYkRCWU0wSm9XakpXWm1NeU5XaGpTRTV2WWpOU1ptSllWbnBoVjA1bVkwZEdibHBXT1hsYVYyUndZakkxYUdKQ1NXWlpla0pTVmxoR1JGSlhkRTVpYTFaWFVWVlNSR0pZV25oalZtaHFXVzVCZVZadFdqUlNSMlJUWVhodk1sUllWbnBoVjA1RllWaE9hbUl6V214amJteFJXVmRrYkZVeVZubGtiV3hxV2xNeFNGcFlVa2xpTWpGc1ZVZEdibHBSUVVKQlIxWjFRVUZHU2xSblFVSlRWVFJCUVZGRlJDMXdla2gyVVd0RFEwRXc%3D",
     );
-    expect(res, isA<YTHomeContinuationPage>());
+    expect(res, isA<ContinuationPage>());
   });
 
   test('Fetches Chip Screen', () async {
@@ -49,7 +52,7 @@ void main() async {
             "ggNCSgQIDBADSgQIBxABSgQIBBABSgQICRABSgQIDRABSgQIAxABSgQICBABSgQIDhABSgQIChABSgQIBhABSgQIBRAB",
       },
     );
-    expect(res, isA<YTChipPage>());
+    expect(res, isA<Page>());
   });
 
   test('Fetches Chip Screen continuation', () async {
@@ -62,14 +65,21 @@ void main() async {
       continuation:
           "4qmFsgKJAxIMRkVtdXNpY19ob21lGvgCQ0FONnl3RkhTMUJCYWpoeVJIWktRVVJYYjFGQ1EyOUZRa05wVWpWa1JqbDNXVmRrYkZnelRuVlpXRUo2WVVjNU1GZ3lNVEZqTW14cVdETkNhRm95Vm1aamJWWnVZVmM1ZFZsWGQxTklNR3Q1VVROV2VGZEZkRzFVYlRreldWVkdSVkV5TVRKaldFWlpXVEpLZVZaNmFESmpSbXgyVlcxellVOUZNVEZqTW14cVVrZHNlbGt5T1RKYVdFbzFWVWRHYmxwV1RteGpibHB3V1RKVmRGSXlWakJUUnpsMFdsWkNhRm95VlVGQlVVSnNZbWRCUWxOVk5FRkJWV3hQUVVGRlFrRjNSVTB0Y0hwSWRsRnJRME5CVVlJRFFrb0VDQXdRQTBvRUNBY1FBVW9FQ0FRUUFVb0VDQWtRQVVvRUNBMFFBVW9FQ0FNUUFVb0VDQWdRQVVvRUNBNFFBVW9FQ0FvUUFVb0VDQVlRQVVvRUNBVVFBUSUzRCUzRA%3D%3D",
     );
-    expect(res, isA<YTChipContinuationPage>());
+    expect(res, isA<ContinuationPage>());
   });
 
   test('Browse More songs', () async {
     final res = await ytmusic.browseMore(
-      body: {"browseId": "VLPL4fGSI1pDJn5oibdgJt8Hy0-dr2B7kSs2", "browseEndpointContextSupportedConfigs": {"browseEndpointContextMusicConfig": {"pageType": "MUSIC_PAGE_TYPE_PLAYLIST"}}},
+      body: {
+        "browseId": "VLPL4fGSI1pDJn5oibdgJt8Hy0-dr2B7kSs2",
+        "browseEndpointContextSupportedConfigs": {
+          "browseEndpointContextMusicConfig": {
+            "pageType": "MUSIC_PAGE_TYPE_PLAYLIST",
+          },
+        },
+      },
     );
-    expect(res, isA<YTBrowsePage>());
+    expect(res, isA<Page>());
   });
 
   test('Get Playlist Page', () async {
@@ -83,7 +93,7 @@ void main() async {
         },
       },
     );
-    expect(res, isA<YTPlaylistPage>());
+    expect(res, isA<Page>());
   });
 
   test("Get playlist Songs", () async {
@@ -104,7 +114,7 @@ void main() async {
         },
       },
     );
-    expect(res, isA<List<YTItem>>());
+    expect(res, isA<List<SectionItem>>());
   });
   test('Get Playlist continuation Page', () async {
     final res = await ytmusic.getPlaylistSectionContinuation(
@@ -119,7 +129,7 @@ void main() async {
       continuation:
           "4qmFsgI9Ei1WTFJEQ0xBSzV1eV9sQk5VdGVCUmVuY0h6S2VsdTVpREh3TEY2bVlxakwtSlUaDGtnRURDTTBHOEFFQQ%3D%3D",
     );
-    expect(res, isA<YTPlaylistContinuationPage>());
+    expect(res, isA<ContinuationPage>());
   });
 
   test('Get Album Page', () async {
@@ -135,7 +145,7 @@ void main() async {
         },
       },
     );
-    expect(res, isA<YTAlbumPage>());
+    expect(res, isA<Page>());
   });
 
   test('Get Artist Page', () async {
@@ -149,7 +159,7 @@ void main() async {
         },
       },
     );
-    expect(res, isA<YTArtistPage>());
+    expect(res, isA<Page>());
   });
 
   test('Get Podcast Page', () async {
@@ -163,7 +173,7 @@ void main() async {
         },
       },
     );
-    expect(res, isA<YTPodcastPage>());
+    expect(res, isA<Page>());
   });
 
   test('Get Podcast Page Continuation', () async {
@@ -179,7 +189,7 @@ void main() async {
       continuation:
           "4qmFsgJuEiZNUFNQUExoUGVpdWtLSENIRlJ3S3ZiZllEMFo4RG5zSWM2bFlFYhpEZWg5UVZEcERTa0ZFU1doQk1WSkVWWHBTYWtwR1VUQlpNRTFWU1ROT2VsVXhrZ0VEQ05rSTJnZ0VDQUlRQVElM0QlM0Q%3D",
     );
-    expect(res, isA<YTPodcastContinuationPage>());
+    expect(res, isA<ContinuationPage>());
   });
 
   test('Get Search Suggestions', () async {
@@ -188,11 +198,11 @@ void main() async {
   });
   test('Get Search Page', () async {
     final res = await ytmusic.getSearch(query: "kahani suno 2.0");
-    expect(res, isA<YTSearchPage>());
+    expect(res, isA<Page>());
   });
   test('Get Explore Page', () async {
     final res = await ytmusic.getExplore();
     // print(res.length);
-    expect(res, isA<List<YTSection>>());
+    expect(res, isA<List<Section>>());
   });
 }

@@ -1,10 +1,10 @@
-import 'package:ytmusic/models/podcast.dart';
-import 'package:ytmusic/models/section.dart';
+import 'package:gyawun_shared/gyawun_shared.dart';
+import 'package:ytmusic/models/continuation_page.dart';
 import 'package:ytmusic/parsers/parser.dart';
 import 'package:ytmusic/utils/traverse.dart';
 
 class PodcastParser {
-  static YTPodcastPage parse(data) {
+  static Page parse(data) {
     final headerData = traverse(data, [
       'contents',
       'twoColumnBrowseResultsRenderer',
@@ -21,30 +21,31 @@ class PodcastParser {
       'secondaryContents',
       'sectionListRenderer',
     ]);
-    return YTPodcastPage(
+    return Page(
       header: Parser.parsePageHeader(headerData),
       sections: sectionsData['contents']
           .map((json) => Parser.parseSection(json))
           .where((e) => e != null)
           .toList()
-          .cast<YTSection>(),
+          .cast<Section>(),
       continuation: null,
+      provider: DataProvider.ytmusic,
     );
   }
 
-  static YTPodcastContinuationPage parseContinuation(data) {
+  static ContinuationPage parseContinuation(data) {
     final sectionsData = traverseList(data, [
       'continuationContents',
       'musicShelfContinuation',
       'contents',
     ]);
 
-    return YTPodcastContinuationPage(
+    return ContinuationPage(
       sections: sectionsData
           .map((json) => Parser.parseSection(json))
           .where((e) => e != null)
           .toList()
-          .cast<YTSection>(),
+          .cast<Section>(),
       continuation: traverseString(data, [
         'continuationContents',
         'musicShelfContinuation',

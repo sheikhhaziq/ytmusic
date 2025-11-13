@@ -1,9 +1,9 @@
+import 'package:gyawun_shared/gyawun_shared.dart';
 import 'package:ytmusic/parsers/parser.dart';
 import 'package:ytmusic/utils/traverse.dart';
-import 'package:ytmusic/ytmusic.dart';
 
 class AlbumParser {
-  static YTAlbumPage parse(data) {
+  static Page parse(data) {
     final headerData = traverse(data, [
       'contents',
       'twoColumnBrowseResultsRenderer',
@@ -22,17 +22,18 @@ class AlbumParser {
       'sectionListRenderer',
     ]);
 
-    return YTAlbumPage(
+    return Page(
       header: Parser.parsePageHeader(headerData),
       sections: sectionsData['contents']
           .map((json) => Parser.parseSection(json))
           .where((e) => e != null)
           .toList()
-          .cast<YTSection>(),
+          .cast<Section>(),
       continuation: traverseString(sectionsData, [
         'continuations',
         'continuation',
       ]),
+      provider: DataProvider.ytmusic,
     );
   }
 }

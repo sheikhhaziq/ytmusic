@@ -1,10 +1,10 @@
-import 'package:ytmusic/models/models.dart';
-import 'package:ytmusic/models/playlist.dart';
+import 'package:gyawun_shared/gyawun_shared.dart';
+import 'package:ytmusic/models/continuation_page.dart';
 import 'package:ytmusic/parsers/parser.dart';
 import 'package:ytmusic/utils/traverse.dart';
 
 class PlaylistParser {
-  static YTPlaylistPage parse(data) {
+  static Page parse(data) {
     final headerData = traverse(data, [
       'contents',
       'twoColumnBrowseResultsRenderer',
@@ -22,36 +22,43 @@ class PlaylistParser {
       'sectionListRenderer',
     ]);
 
-    return YTPlaylistPage(
+    return Page(
       header: Parser.parsePageHeader(headerData),
       sections: sectionsData['contents']
           .map((json) => Parser.parseSection(json))
           .where((e) => e != null)
           .toList()
-          .cast<YTSection>(),
+          .cast<Section>(),
       continuation: traverseString(sectionsData, [
         'continuations',
         'continuation',
       ]),
+      provider: DataProvider.ytmusic,
     );
   }
-  static List<YTItem> parseSongs(data){
-    final items = data['contents']['singleColumnMusicWatchNextResultsRenderer']['tabbedRenderer']['watchNextTabbedResultsRenderer']['tabs'][0]['tabRenderer']['content']['musicQueueRenderer']['content']['playlistPanelRenderer']['contents'];
-    return items.map((e) => Parser.parseSectionItem(e)).where((e) => e != null).toList().cast<YTItem>();
+
+  static List<SectionItem> parseSongs(data) {
+    final items =
+        data['contents']['singleColumnMusicWatchNextResultsRenderer']['tabbedRenderer']['watchNextTabbedResultsRenderer']['tabs'][0]['tabRenderer']['content']['musicQueueRenderer']['content']['playlistPanelRenderer']['contents'];
+    return items
+        .map((e) => Parser.parseSectionItem(e))
+        .where((e) => e != null)
+        .toList()
+        .cast<SectionItem>();
   }
 
-  static YTPlaylistContinuationPage parseContinuation(data) {
+  static ContinuationPage parseContinuation(data) {
     final sectionsData = traverseList(data, [
       'continuationContents',
       'sectionListContinuation',
       'contents',
     ]);
-    return YTPlaylistContinuationPage(
+    return ContinuationPage(
       sections: sectionsData
           .map((json) => Parser.parseSection(json))
           .where((e) => e != null)
           .toList()
-          .cast<YTSection>(),
+          .cast<Section>(),
       continuation: traverseString(data, [
         'continuationContents',
         'musicShelfContinuation',

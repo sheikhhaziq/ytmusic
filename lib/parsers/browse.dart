@@ -1,10 +1,9 @@
-import 'package:ytmusic/models/browse_page.dart';
-import 'package:ytmusic/models/models.dart';
+import 'package:gyawun_shared/gyawun_shared.dart';
 import 'package:ytmusic/parsers/parser.dart';
 import 'package:ytmusic/utils/traverse.dart';
 
 class BrowseParser {
-  static YTBrowsePage parse(data) {
+  static Page parse(data) {
     bool hasHeader = true;
     if (data['contents']['singleColumnBrowseResultsRenderer'] != null) {
       hasHeader = false;
@@ -39,13 +38,14 @@ class BrowseParser {
       'musicResponsiveHeaderRenderer',
     ]);
 
-    return YTBrowsePage(
+    return Page(
       header: hasHeader ? Parser.parsePageHeader(header) : null,
       sections: contentsData
           .map((json) => Parser.parseSection(json))
           .where((e) => e != null)
           .toList()
-          .cast<YTSection>(),
+          .cast<Section>(),
+      provider: DataProvider.ytmusic,
     );
   }
 }
