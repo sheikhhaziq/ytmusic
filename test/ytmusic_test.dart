@@ -3,15 +3,15 @@ import 'package:gyawun_shared/gyawun_shared.dart';
 import 'package:ytmusic/models/continuation_page.dart';
 import 'package:ytmusic/models/item_continuation.dart';
 import 'package:ytmusic/models/search.dart';
+import 'package:ytmusic/utils/pretty_print.dart';
 
 import 'package:ytmusic/ytmusic.dart';
 
 void main() async {
-  final config = await YTMusic.fetchConfig();
   final c = YTConfig(
     visitorData: 'CgtyMmtCeERiTjd0USiJwbDHBjIKCgJJThIEGgAgOA%3D%3D',
-    language: config?.language ?? '',
-    location: config?.location ?? "",
+    language: '',
+    location: "",
   );
   final ytmusic = YTMusic(config: c);
 
@@ -46,11 +46,16 @@ void main() async {
 
   test('Fetches Chip Screen', () async {
     final res = await ytmusic.getChipPage(
+      limit: 3,
       body: {
-        "browseId": "FEmusic_home",
-        "params":
-            "ggNCSgQIDBADSgQIBxABSgQIBBABSgQICRABSgQIDRABSgQIAxABSgQICBABSgQIDhABSgQIChABSgQIBhABSgQIBRAB",
+        "query": "hello",
+        "params": "EgWKAQIQAWoQEAkQChAFEAMQEBAEEBUQEQ%3D%3D",
+
+        // "browseId": "FEmusic_home",
+        // "params":
+        //     "ggNCSgQIDBADSgQIBxABSgQIBBABSgQICRABSgQIDRABSgQIAxABSgQICBABSgQIDhABSgQIChABSgQIBhABSgQIBRAB",
       },
+      type: ChipType.search,
     );
     expect(res, isA<Page>());
   });
@@ -99,12 +104,12 @@ void main() async {
   test("Get playlist Songs", () async {
     final res = await ytmusic.getNextSongs(
       body: {
-        "videoId": "rvGbTsXPu9A",
-        "playlistId": "RDAMVMrvGbTsXPu9A",
-        "params": "wAEB",
+        "videoId": "9kznlAwE-8o",
+        "playlistId": "OLAK5uy_ljWDekJVUfMOYniqd1mZ8l45Q2nAwk4ds",
         "loggingContext": {
           "vssLoggingContext": {
-            "serializedContextData": "GhFSREFNVk1ydkdiVHNYUHU5QQ%3D%3D",
+            "serializedContextData":
+                "GilPTEFLNXV5X2xqV0Rla0pWVWZNT1luaXFkMW1aOGw0NVEybkF3azRkcw%3D%3D",
           },
         },
         "watchEndpointMusicSupportedConfigs": {
@@ -114,6 +119,7 @@ void main() async {
         },
       },
     );
+    pprint(res.first.toJson());
     expect(res, isA<List<SectionItem>>());
   });
   test('Get Playlist continuation Page', () async {
@@ -193,7 +199,7 @@ void main() async {
   });
 
   test('Get Search Suggestions', () async {
-    final res = await ytmusic.getSearchSuggestions(query: "za");
+    final res = await ytmusic.getSearchSuggestions(query: "hbiwjncjbxc");
     expect(res, isA<YTSearchSuggestions>());
   });
   test('Get Search Page', () async {

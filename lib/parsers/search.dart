@@ -10,13 +10,19 @@ class SearchParser {
       "tabbedSearchResultsRenderer",
       "tabs",
     ]);
-    final contentsdata = traverseList(tabs[0], [
+    final sectionListRenderer = traverse(tabs[0], [
       "tabRenderer",
       "content",
       "sectionListRenderer",
-      "contents",
+    ]);
+    final contentsdata = traverseList(sectionListRenderer, ["contents"]);
+    final chipsData = traverseList(sectionListRenderer, [
+      'header',
+      'chipCloudRenderer',
+      'chips',
     ]);
     return Page(
+      chips: chipsData.map(Parser.parseChips).toList().cast<ChipItem>(),
       sections: contentsdata
           .map((Parser.parseSection))
           .where((e) => e != null)
@@ -28,21 +34,34 @@ class SearchParser {
   }
 
   static YTSearchSuggestions parseSuggestions(data) {
-    final textSuggestionsData = traverseList(data?["contents"]?[0], [
-      "searchSuggestionsSectionRenderer",
-      "contents",
-    ]);
-    final sectionItemSuggestions = traverseList(data?["contents"]?[1], [
-      "searchSuggestionsSectionRenderer",
-      "contents",
-    ]);
+    if (data?["contents"] == null) {
+      return YTSearchSuggestions(textItems: [], sectionItems: []);
+    }
+    List? textSuggestionsData;
+    List? sectionItemSuggestions;
+
+    if (data?["contents"].isNotEmpty) {
+      textSuggestionsData = traverseList(data?["contents"]?[0], [
+        "searchSuggestionsSectionRenderer",
+        "contents",
+      ]);
+    }
+    if (data?["contents"].length > 1) {
+      sectionItemSuggestions = traverseList(data?["contents"]?[1], [
+        "searchSuggestionsSectionRenderer",
+        "contents",
+      ]);
+    }
+
     return YTSearchSuggestions(
-      textItems: textSuggestionsData.map(_textSuggestions).toList(),
-      sectionItems: sectionItemSuggestions
-          .map((e) => Parser.parseSectionItem(e))
-          .where((e) => e != null)
-          .toList()
-          .cast<SectionItem>(),
+      textItems: textSuggestionsData?.map(_textSuggestions).toList() ?? [],
+      sectionItems:
+          sectionItemSuggestions
+              ?.map((e) => Parser.parseSectionItem(e))
+              .where((e) => e != null)
+              .toList()
+              .cast<SectionItem>() ??
+          [],
     );
   }
 

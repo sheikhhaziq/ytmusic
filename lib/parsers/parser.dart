@@ -54,6 +54,19 @@ class Parser {
     return null;
   }
 
+  static ChipItem parseChips(data) {
+    final chipData = data['chipCloudChipRenderer'];
+    final endpoint = traverse(chipData, ['navigationEndpoint']);
+    if (endpoint['browseEndpoint'] != null) {}
+    return ChipItem(
+      type: endpoint['browseEndpoint'] != null
+          ? ChipType.browse
+          : ChipType.search,
+      title: traverseString(chipData, ['text', 'runs', 'text']) ?? "",
+      endpoint: endpoint['browseEndpoint'] ?? endpoint['searchEndpoint'],
+    );
+  }
+
   static Section _musicCarouselShelfRenderer(data) {
     // ["header","contents","trackingParams","itemSize","numItemsPerColumn","header","contents","trackingParams","itemSize"]
     final header = data['header']['musicCarouselShelfBasicHeaderRenderer'];

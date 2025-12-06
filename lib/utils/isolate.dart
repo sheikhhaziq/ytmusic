@@ -16,11 +16,10 @@ Future<R> runInIsolate<Q, R>(
 }
 
 class _IsolateMessage<Q, R> {
+  _IsolateMessage(this.function, this.message, this.sendPort);
   final FutureOr<R> Function(Q) function;
   final Q message;
   final SendPort sendPort;
-
-  _IsolateMessage(this.function, this.message, this.sendPort);
 }
 
 void _isolateEntry<Q, R>(_IsolateMessage<Q, R> message) async {

@@ -5,13 +5,6 @@ part 'artist.g.dart';
 
 @JsonSerializable()
 class YTArtistBasic {
-  @JsonKey(readValue: _extractTitle)
-  String title;
-  @JsonKey(readValue: _extractBrowseId)
-  String id;
-  @JsonKey(readValue: _extractEndpoint)
-  Map endpoint;
-
   YTArtistBasic({
     required this.title,
     required this.id,
@@ -20,6 +13,12 @@ class YTArtistBasic {
 
   factory YTArtistBasic.fromJson(Map<String, dynamic> json) =>
       _$YTArtistBasicFromJson(json);
+  @JsonKey(readValue: _extractTitle)
+  String title;
+  @JsonKey(readValue: _extractBrowseId)
+  String id;
+  @JsonKey(readValue: _extractEndpoint)
+  Map endpoint;
 
   Map<String, dynamic> toJson() => _$YTArtistBasicToJson(this);
 

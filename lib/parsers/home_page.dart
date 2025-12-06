@@ -19,7 +19,7 @@ class HomePageParser {
       'chips',
     ]);
     final sectionsData = traverseList(head, ['contents']);
-    final chips = chipsData.map(_parseChips).toList();
+    final chips = chipsData.map(Parser.parseChips).toList();
     final sections = sectionsData
         .map(Parser.parseSection)
         .where((section) => section != null)
@@ -34,14 +34,6 @@ class HomePageParser {
       continuation: continuations,
       header: null,
       provider: DataProvider.ytmusic,
-    );
-  }
-
-  static ChipItem _parseChips(data) {
-    final chipData = data['chipCloudChipRenderer'];
-    return ChipItem(
-      title: traverseString(chipData, ['text', 'runs', 'text']) ?? "",
-      endpoint: traverse(chipData, ['navigationEndpoint', 'browseEndpoint']),
     );
   }
 

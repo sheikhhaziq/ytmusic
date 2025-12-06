@@ -14,11 +14,10 @@ dependencies:
   dio: ^5.8.0+1
   cookie_jar: ^4.0.8
   json_annotation: ^4.9.0
-  dio_cache_interceptor: ^4.0.5
-  http_cache_drift_store: ^7.0.0
   gyawun_shared:
     path: ../gyawun_shared
   path: ^1.9.1
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:

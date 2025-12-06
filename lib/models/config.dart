@@ -1,12 +1,12 @@
 class YTConfig {
-  String visitorData;
-  String language;
-  String location;
   YTConfig({
     required this.visitorData,
     required this.language,
     required this.location,
   });
+  String visitorData;
+  String language;
+  String location;
 
   YTConfig copyWith({
     String? visitorData,

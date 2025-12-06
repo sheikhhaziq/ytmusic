@@ -1,202 +1,181 @@
-import 'package:cookie_jar/cookie_jar.dart';
-import 'package:dio/dio.dart';
-import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
-import 'package:http_cache_drift_store/http_cache_drift_store.dart';
-import 'package:ytmusic/ytmusic.dart';
+import 'dart:convert';
+
+import 'package:http/http.dart';
+import 'package:ytmusic/models/config.dart';
+import 'package:ytmusic/utils/helpers.dart';
 
 class YTClient {
-  YTConfig config;
-  late CookieJar _cookieJar;
-  late Dio _dio;
-  String? cacheDatabasePath;
-  final void Function(YTConfig)? onConfigUpdate;
-  YTClient(
-    this.config,
-    cookies, {
-    this.onConfigUpdate,
-    this.cacheDatabasePath,
-  }) {
-    _setupDio();
-    _addCacheInterceptor();
-    _setupCookies(cookies);
+  YTClient({required this.config, this.onIdUpdate}) {
+    init();
+  }
+  Map<String, String> headers = {};
+  Map<String, dynamic> context = {};
+  int? signatureTimestamp;
+  YTConfig? config;
+  void Function(String visitorId)? onIdUpdate;
+
+  static const ytmDomain = 'music.youtube.com';
+  static const httpsYtmDomain = 'https://music.youtube.com';
+  static const baseApiEndpoint = '/youtubei/v1/';
+  static const String ytmParams =
+      '?alt=json&key=AIzaSyC9XL3ZjWddXya6X74dJoCTL-WEYFDNX30';
+  static const userAgent =
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0';
+
+  Future<void> init() async {
+    headers = initializeHeaders();
+    context = initializeContext(
+      config?.language ?? 'en',
+      config?.location ?? 'IN',
+    );
+
+    if (config?.visitorData != null) {
+      headers['X-Goog-Visitor-Id'] = config!.visitorData;
+    }
   }
 
-  _setupCookies(String? cookies) {
-    _cookieJar = CookieJar();
-    if (cookies != null) {
-      for (final cookieString in cookies.split("; ")) {
-        final cookie = Cookie.fromSetCookieValue(cookieString);
-        _cookieJar.saveFromResponse(Uri.parse(_dio.options.baseUrl), [cookie]);
+  void setConfig(YTConfig config) {
+    this.config = config;
+    init();
+  }
+
+  void setLanguage(String language) {
+    config = config?.copyWith(language: language);
+    init();
+  }
+
+  void setLocation(String location) {
+    config = config?.copyWith(location: location);
+    init();
+  }
+
+  void setVisitorId(String id) {
+    config = config?.copyWith(visitorData: id);
+    init();
+  }
+
+  void refreshContext() {
+    context = initializeContext(
+      config?.language ?? 'en',
+      config?.location ?? 'IN',
+    );
+  }
+
+  Future<void> refreshHeaders() async {
+    headers = initializeHeaders();
+    if (config?.visitorData != null) {
+      headers['X-Goog-Visitor-Id'] = config!.visitorData;
+    }
+  }
+
+  Future<void> resetVisitorId() async {
+    Map<String, String> newHeaders = Map.from(headers);
+    newHeaders.remove('X-Goog-Visitor-Id');
+    final response = await sendGetRequest(httpsYtmDomain, newHeaders);
+    final reg = RegExp(r'ytcfg\.set\s*\(\s*({.+?})\s*\)\s*;');
+    RegExpMatch? matches = reg.firstMatch(response.body);
+    String? visitorId;
+    if (matches != null) {
+      final ytcfg = json.decode(matches.group(1).toString());
+      visitorId = ytcfg['VISITOR_DATA']?.toString();
+      config ??= YTConfig(visitorData: '', language: 'en', location: 'IN');
+      config = config!.copyWith(visitorData: visitorId);
+      if (onIdUpdate != null && visitorId != null) {
+        onIdUpdate!(visitorId);
       }
     }
+    refreshHeaders();
   }
 
-  _setupDio() {
-    _dio = Dio(
-      BaseOptions(
-        baseUrl: "https://music.youtube.com/",
-        headers: {
-          "User-Agent":
-              "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0",
-          "Accept-Language": "en-US,en;q=0.5",
-          "Accept-Enconding": "gzip",
-          "Accept": "application/json, text/plain, */*",
-          "Content-Type": 'application/json',
-        },
-        // extra: {'withCredentials': true},
-      ),
-    );
-    _dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          final cookies = await _cookieJar.loadForRequest(
-            Uri.parse(options.baseUrl),
-          );
-          final cookieString = cookies
-              .map((cookie) => '${cookie.name}=${cookie.value}')
-              .join('; ');
-          if (cookieString.isNotEmpty) {
-            options.headers['cookie'] = cookieString;
-          }
-          return handler.next(options);
-        },
-        onResponse: (response, handler) {
-          final cookieStrings = response.headers['set-cookie'] ?? [];
-          for (final cookieString in cookieStrings) {
-            final cookie = Cookie.fromSetCookieValue(cookieString);
-            _cookieJar.saveFromResponse(
-              Uri.parse(response.requestOptions.baseUrl),
-              [cookie],
-            );
-          }
-          return handler.next(response);
-        },
-      ),
-    );
-  }
-
-  _addCacheInterceptor() {
-    if (cacheDatabasePath != null) {
-      print('cache path: $cacheDatabasePath');
-      _dio.interceptors.add(
-        DioCacheInterceptor(
-          options: CacheOptions(
-            store: DriftCacheStore(
-              databasePath: cacheDatabasePath!,
-              logStatements: true,
-            ),
-            // hitCacheOnErrorCodes: [500, 502, 503],
-            hitCacheOnNetworkFailure: true,
-            maxStale: Duration(days: 7),
-            allowPostMethod: true,
-            policy: CachePolicy.request,
-            priority: CachePriority.high,
-          ),
-        ),
-      );
+  static Future<String?> getVisitorid() async {
+    Map<String, String> newHeaders = initializeHeaders();
+    newHeaders.remove('X-Goog-Visitor-Id');
+    final response = await _sendGetRequest(httpsYtmDomain, newHeaders);
+    final reg = RegExp(r'ytcfg\.set\s*\(\s*({.+?})\s*\)\s*;');
+    RegExpMatch? matches = reg.firstMatch(response.body);
+    String? visitorId;
+    if (matches != null) {
+      final ytcfg = json.decode(matches.group(1).toString());
+      visitorId = ytcfg['VISITOR_DATA']?.toString();
+      return visitorId;
     }
+    return null;
   }
 
-  static Future<YTConfig?> fetchConfig() async {
-    try {
-      final response = await Dio(
-        BaseOptions(
-          baseUrl: "https://music.youtube.com/",
-          headers: {
-            "User-Agent":
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0",
-            "Accept-Language": "en-US,en;q=0.5",
-            "Accept-Enconding": "gzip",
-            "Accept": "application/json, text/plain, */*",
-            "Content-Type": 'application/json',
-          },
-        ),
-      ).get('/');
-      final html = response.data;
-      return YTConfig(
-        visitorData: _extractValue(html, r'"VISITOR_DATA":"(.*?)"'),
-        location: _extractValue(html, r'"GL":"(.*?)"'),
-        language: _extractValue(html, r'"HL":"(.*?)"'),
-      );
-    } catch (e) {
-      print('Error fetching data: ${e.toString()}');
-      return null;
+  Future<Response> sendGetRequest(
+    String url,
+    Map<String, String>? headers,
+  ) async {
+    final Uri uri = Uri.parse(url);
+    final Response response = await get(uri, headers: headers);
+    return response;
+  }
+
+  static Future<Response> _sendGetRequest(
+    String url,
+    Map<String, String>? headers,
+  ) async {
+    final Uri uri = Uri.parse(url);
+    final Response response = await get(uri, headers: headers);
+    return response;
+  }
+
+  Future<Response> addPlayingStats(String videoId, Duration time) async {
+    // 1. Safety Check: If visitorData is missing, fetch it before sending stats
+    if (config?.visitorData == null || config!.visitorData.isEmpty) {
+      await resetVisitorId();
     }
+
+    // 2. Ensure the header is actually attached to this specific request
+    if (headers['X-Goog-Visitor-Id'] == null && config?.visitorData != null) {
+      headers['X-Goog-Visitor-Id'] = config!.visitorData;
+    }
+
+    // 3. Construct the URI
+    final Uri uri = Uri.parse(
+      'https://music.youtube.com/api/stats/watchtime?ns=yt&ver=2&c=WEB_REMIX&cmt=${(time.inMilliseconds / 1000)}&docid=$videoId',
+    );
+
+    // 4. Send with the ensured headers
+    final Response response = await get(uri, headers: headers);
+    return response;
   }
 
-  static String _extractValue(String html, String regex) {
-    final match = RegExp(regex).firstMatch(html);
-    return match != null ? match.group(1)! : '';
-  }
-
-  Future<dynamic> constructRequest(
+  Future<Map> sendRequest(
     String endpoint, {
     Map<String, dynamic> body = const {},
-    Map<String, String> query = const {},
+    Map<String, String>? headers,
+    String additionalParams = '',
   }) async {
-    final headers = <String, String>{
-      "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36 Edg/105.0.1343.42",
-      "accept": "*/*",
-      "accept-encoding": "gzip, deflate",
-      "content-type": "application/json",
-      "content-encoding": "gzip",
-      "Origin": "https://music.youtube.com",
-      "cookie": "CONSENT=YES+1",
-      "Accept-Language": "en",
-      "X-Goog-Visitor-Id": config.visitorData,
-    };
-    if (config.visitorData.trim().isEmpty) {
-      final c = await fetchConfig();
-      if (c != null) {
-        config = c;
-        if (onConfigUpdate != null) {
-          onConfigUpdate!(c);
-        }
-      }
+    //
+    body = {...body, ...context};
+
+    this.headers.addAll(headers ?? {});
+
+    if (config?.visitorData == null || config!.visitorData.isEmpty) {
+      await resetVisitorId();
     }
-
-    final searchParams = Uri.parse("?").replace(
-      queryParameters: {
-        ...query,
-        "alt": "json",
-        "key": "AIzaSyC9XL3ZjWddXya6X74dJoCTL-WEYFDNX30",
-      },
+    if (this.headers['X-Goog-Visitor-Id'] == null &&
+        config?.visitorData != null) {
+      this.headers['X-Goog-Visitor-Id'] = config!.visitorData;
+    }
+    final Uri uri = Uri.parse(
+      httpsYtmDomain +
+          baseApiEndpoint +
+          endpoint +
+          ytmParams +
+          additionalParams,
     );
-    final DateTime now = DateTime.now();
-    final String year = now.year.toString();
-    final String month = now.month.toString().padLeft(2, '0');
-    final String day = now.day.toString().padLeft(2, '0');
-    final String date = year + month + day;
-    final context = {
-      "context": {
-        "client": {
-          "clientName": "WEB_REMIX",
-          "clientVersion": '1.$date.01.00',
-          "gl": config.location,
-          "hl": config.language,
-          "visitorData": config.visitorData,
-        },
+    final response = await post(
+      uri,
+      headers: this.headers,
+      body: jsonEncode(body),
+    );
 
-        "user": {},
-      },
-      ...body,
-    };
-    try {
-      final response = await _dio.post(
-        "youtubei/v1/$endpoint${searchParams.toString()}",
-        data: context,
-        options: Options(headers: headers),
-      );
-      final jsonData = response.data;
-
-      if (jsonData.containsKey("responseContext")) {
-        return jsonData;
-      } else {
-        return jsonData;
-      }
-    } on DioException catch (e) {
-      throw "Error${e.message}";
+    if (response.statusCode == 200) {
+      return json.decode(response.body) as Map;
+    } else {
+      return {};
     }
   }
 }

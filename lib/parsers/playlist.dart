@@ -38,13 +38,17 @@ class PlaylistParser {
   }
 
   static List<SectionItem> parseSongs(data) {
+    final renderer =
+        data['contents']['singleColumnMusicWatchNextResultsRenderer']['tabbedRenderer']['watchNextTabbedResultsRenderer']['tabs'][0]['tabRenderer']['content']['musicQueueRenderer'];
     final items =
-        data['contents']['singleColumnMusicWatchNextResultsRenderer']['tabbedRenderer']['watchNextTabbedResultsRenderer']['tabs'][0]['tabRenderer']['content']['musicQueueRenderer']['content']['playlistPanelRenderer']['contents'];
+        renderer?['content']?['playlistPanelRenderer']?['contents'] as List?;
+    // ['content']['playlistPanelRenderer']['contents'];
     return items
-        .map((e) => Parser.parseSectionItem(e))
-        .where((e) => e != null)
-        .toList()
-        .cast<SectionItem>();
+            ?.map((e) => Parser.parseSectionItem(e))
+            .where((e) => e != null)
+            .toList()
+            .cast<SectionItem>() ??
+        [];
   }
 
   static ContinuationPage parseContinuation(data) {

@@ -7,7 +7,6 @@ class ChipPageParser {
   static Page parse(data) {
     final head = traverse(data, [
       'contents',
-      'singleColumnBrowseResultsRenderer',
       'tabs',
       'tabRenderer',
       'content',
