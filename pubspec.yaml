@@ -15,7 +15,8 @@ dependencies:
   cookie_jar: ^4.0.8
   json_annotation: ^4.9.0
   gyawun_shared:
-    path: ../gyawun_shared
+    git:
+      url: https://github.com/sheikhhaziq/gyawun_shared.git
   path: ^1.9.1
   http: ^1.6.0
 
